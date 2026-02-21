@@ -1,5 +1,7 @@
 package com.example.backend1.controller;
 
+import com.example.backend1.model.User;
+import com.example.backend1.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -12,8 +14,8 @@ public class UserService {
         this.userRepository=userRepository;
     }
 
-    public boolean login(String username, String password){
-        Optional<User> optionalUser=userRepository.findUserByUsername(username);
+    public boolean login(String email, String password){
+        Optional<User> optionalUser=userRepository.findUserByEmail(email);
 
         if (optionalUser.isPresent()){
             User user =optionalUser.get();
