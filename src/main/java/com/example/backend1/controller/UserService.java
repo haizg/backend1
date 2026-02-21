@@ -1,5 +1,7 @@
 package com.example.backend1.controller;
 
+import com.example.backend1.model.User;
+import com.example.backend1.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;

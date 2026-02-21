@@ -10,7 +10,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class SecurityConfig {
 
-    // ✅ Enable CORS globally for Angular dev
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
@@ -23,7 +22,6 @@ public class SecurityConfig {
         };
     }
 
-    // ✅ Allow all requests without login (dev only)
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http

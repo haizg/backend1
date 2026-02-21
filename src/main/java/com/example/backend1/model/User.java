@@ -1,4 +1,4 @@
-package com.example.backend1.controller;
+package com.example.backend1.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
