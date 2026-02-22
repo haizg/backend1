@@ -1,24 +1,22 @@
 package com.example.backend1.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name="organisateurs")
 public class Organisateur {
     @Id
-    private String cin;
+    private Long cin;
     private String nom;
     private String prenom;
     private String adresse;
     private String email;
 
-    public String getCin() {
+    public Long getCin() {
         return cin;
     }
 
-    public void setCin(String cin) {
+    public void setCin(Long cin) {
         this.cin = cin;
     }
 
