@@ -10,7 +10,10 @@ public class Organisateur {
     private String nom;
     private String prenom;
     private String adresse;
+    @Column(unique = true, nullable = false)
     private String email;
+    @Column(nullable = false)
+    private String role = "ORGANISATEUR";
 
     public Long getCin() {
         return cin;
@@ -50,5 +53,12 @@ public class Organisateur {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 }

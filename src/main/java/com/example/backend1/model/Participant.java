@@ -19,9 +19,9 @@ public class Participant {
     @Column(nullable = false)
     private String eventName;
 
+
     private boolean verified = false;
 
-    // Constructors
     public Participant() {}
 
     public Participant(String email, Integer numberOfPeople, String eventName) {
@@ -30,7 +30,7 @@ public class Participant {
         this.eventName = eventName;
     }
 
-    // Getters and Setters
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
