@@ -2,6 +2,7 @@ package com.example.backend1.util;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
+import com.example.backend1.model.Role;
 
 import java.security.Key;
 import java.util.Date;
@@ -13,21 +14,22 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(SECRET.getBytes());
     }
 
-    public String generateToken(String email, String role){
+    public String generateToken(String email, Role role){
         return Jwts.builder()
                 .setSubject(email)
-                .claim("role",role)
+                .claim("role", role.name())
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis()+EXPIRATION_TIME))
-                .signWith(getSigningKey(),SignatureAlgorithm.HS256)
+                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
     public String extractEmail(String token){
         return getClaims(token).getSubject();
     }
-    public String extractRole(String token){
-        return (String) getClaims(token).get("role");
+    public Role extractRole(String token) {
+        String roleString = (String) getClaims(token).get("role");
+        return Role.valueOf(roleString);
     }
     public boolean validateToken(String token){
         try{

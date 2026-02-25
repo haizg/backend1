@@ -12,8 +12,18 @@ public class Organisateur {
     private String adresse;
     @Column(unique = true, nullable = false)
     private String email;
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String role = "ORGANISATEUR";
+    private Role role = Role.USER;
+    public Organisateur() {}
+    public Organisateur(String nom, String prenom,String adresse, String email, Role role, Long cin) {
+        this.cin = cin;
+        this.nom = nom;
+        this.prenom = prenom;
+        this.email = email;
+        this.adresse = adresse;
+        this.role = role;
+    }
 
     public Long getCin() {
         return cin;
@@ -54,11 +64,11 @@ public class Organisateur {
     public void setEmail(String email) {
         this.email = email;
     }
-    public String getRole() {
+    public Role  getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(Role role) {
         this.role = role;
     }
 }
