@@ -5,24 +5,17 @@ import com.example.backend1.model.User;
 import com.example.backend1.repository.OrganisateurRepository;
 import com.example.backend1.repository.UserRepository;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
 @RestController
+@RequestMapping("/api/auth")
 public class HelloController {
 
     private final UserRepository userRepository;
     private final UserService userService;
     private final OrganisateurRepository organisateurRepository;
-
-    @GetMapping("/api/hello")
-    public String hello() {
-        return "Hello from Spring Boot hibaa!";
-    }
 
 
     public HelloController(UserService userService, UserRepository userRepository, OrganisateurRepository organisateurRepository){
@@ -31,7 +24,8 @@ public class HelloController {
         this.organisateurRepository= organisateurRepository;
     }
 
-    @PostMapping("/api/login")
+
+    @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         boolean success = userService.login(request.getEmail(),request.getPassword());
         if (success){
@@ -40,25 +34,12 @@ public class HelloController {
         return ResponseEntity.status(401).build();
     }
 
-    @PostMapping("/api/signUpUser")
-    public User signUpUser(@RequestBody User user){
-        System.out.println("Received signup request!");
-        System.out.println("User data: " + user);
-        User savedUser = userRepository.save(user);
-        System.out.println("Saved user: " + savedUser);
 
-        return savedUser;
+    @PostMapping("/signup")
+    public ResponseEntity<?> signup(@RequestBody SignUpRequest request){
+        return userService.signUp(request);
     }
 
-    @PostMapping("/api/signUpOrg")
-    public Organisateur signUpOrg(@RequestBody Organisateur organisateur){
-        System.out.println("Received signup organizer request!");
-        System.out.println("organizer data: " + organisateur);
-        Organisateur savedOrganisateur = organisateurRepository.save(organisateur);
-        System.out.println("Saved organizer: " + savedOrganisateur);
-
-        return savedOrganisateur;
-    }
 
 
 }

@@ -6,32 +6,43 @@ import jakarta.persistence.*;
 @Table(name="organisateurs")
 public class Organisateur {
     @Id
-    private Long cin;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     private String nom;
     private String prenom;
-    private String adresse;
+
     @Column(unique = true, nullable = false)
     private String email;
+    private String password;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Role role = Role.USER;
+    private Role role = Role.ROLE_ORGANISATEUR;
+
+
+    private boolean isVerified = false;
+
     public Organisateur() {}
     public Organisateur(String nom, String prenom,String adresse, String email, Role role, Long cin) {
-        this.cin = cin;
         this.nom = nom;
         this.prenom = prenom;
         this.email = email;
-        this.adresse = adresse;
         this.role = role;
     }
 
-    public Long getCin() {
-        return cin;
+
+    public String getPassword() {
+        return password;
     }
 
-    public void setCin(Long cin) {
-        this.cin = cin;
+    public void setPassword(String password) {
+        this.password = password;
     }
+
+
+    public boolean isVerified() { return isVerified; }
+    public void setVerified(boolean verified) { isVerified = verified; }
+
 
     public String getNom() {
         return nom;
@@ -47,14 +58,6 @@ public class Organisateur {
 
     public void setPrenom(String prenom) {
         this.prenom = prenom;
-    }
-
-    public String getAdresse() {
-        return adresse;
-    }
-
-    public void setAdresse(String adresse) {
-        this.adresse = adresse;
     }
 
     public String getEmail() {

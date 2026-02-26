@@ -6,6 +6,10 @@ import com.example.backend1.model.Role;
 
 import java.security.Key;
 import java.util.Date;
+
+
+
+@Component
 public class JwtUtil {
     private static final String SECRET = "MyVerySecretKeyForJWTTokenGenerationThatIsLongEnough123456789";
     private static final long EXPIRATION_TIME = 86400000;

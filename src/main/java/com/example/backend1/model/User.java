@@ -16,7 +16,7 @@ public class User {
     private String password;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Role role = Role.USER;
+    private Role role = Role.ROLE_USER;
     public User() {}
     public User(String nom, String prenom, String email, String password, Role role) {
         this.nom = nom;

@@ -1,7 +1,7 @@
 package com.example.backend1.model;
 
 public enum Role {
-    USER,
-    ORGANISATEUR,
-    ADMIN
+    ROLE_USER,
+    ROLE_ORGANISATEUR,
+    ROLE_ADMIN
 }
