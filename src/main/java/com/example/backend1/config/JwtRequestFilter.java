@@ -38,7 +38,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             try {
                 if (jwtUtil.validateToken(token)) {
                     String email = jwtUtil.extractEmail(token);
-                    Role role = jwtUtil.extractRole(token);  // Gets Enum
+                    Role role = jwtUtil.extractRole(token);
 
                     SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + role.name());
 

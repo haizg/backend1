@@ -5,6 +5,7 @@ import com.example.backend1.model.Role;
 import com.example.backend1.model.User;
 import com.example.backend1.repository.OrganisateurRepository;
 import com.example.backend1.repository.UserRepository;
+import com.example.backend1.util.JwtUtil;
 import org.hibernate.sql.ast.tree.from.CorrelatedTableGroup;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -22,12 +23,14 @@ public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final OrganisateurRepository organisateurRepository;
+    private final JwtUtil jwtUtil;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, OrganisateurRepository organisateurRepository)
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, OrganisateurRepository organisateurRepository, JwtUtil jwtUtil)
     {
         this.userRepository=userRepository;
         this.passwordEncoder=passwordEncoder;
         this.organisateurRepository = organisateurRepository;
+        this.jwtUtil = jwtUtil;
     }
 
 
@@ -46,9 +49,6 @@ public class UserService implements UserDetailsService {
         Optional<Organisateur> orgOpt = organisateurRepository.findByEmail(email);
         if (orgOpt.isPresent()){
             Organisateur org = orgOpt.get();
-            if (!org.isVerified()){
-                throw new UsernameNotFoundException("Account not verified yet");
-            }
             return new org.springframework.security.core.userdetails.User(
                     org.getEmail(),
                     org.getPassword(),
@@ -61,14 +61,30 @@ public class UserService implements UserDetailsService {
     }
 
 
-    public boolean login(String email, String password){
+    public String login(String email, String password){
         Optional<User> optionalUser=userRepository.findUserByEmail(email);
 
 
         if (optionalUser.isPresent()){
-            return passwordEncoder.matches(password,optionalUser.get().getPassword());
+            User user = optionalUser.get();
+            if (passwordEncoder.matches(password,user.getPassword())){
+                return jwtUtil.generateToken(user.getEmail(), user.getRole());
+            }
+            return null;
         }
-        return false;
+        Optional<Organisateur> optionalOrg = organisateurRepository.findByEmail(email);
+        if (optionalOrg.isPresent()){
+            Organisateur org=optionalOrg.get();
+            if (!org.isVerified()){
+                return "NOT_VERIFIED";
+            }
+            if (passwordEncoder.matches(password, org.getPassword())){
+                return jwtUtil.generateToken(org.getEmail(),org.getRole());
+            }
+            return null;
+        }
+        return null;
+
     }
 
 
