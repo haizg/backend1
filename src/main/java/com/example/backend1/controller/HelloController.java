@@ -27,11 +27,14 @@ public class HelloController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-        boolean success = userService.login(request.getEmail(),request.getPassword());
-        if (success){
-            return ResponseEntity.ok().build();
+        String result = userService.login(request.getEmail(),request.getPassword());
+        if (result==null){
+            return ResponseEntity.status(401).body("Invalid credentials");
         }
-        return ResponseEntity.status(401).build();
+        if (result.equals("NOT_VERIFIED")){
+            return ResponseEntity.status(403).body("Account not verified yet");
+        }
+        return ResponseEntity.ok(result);
     }
 
 
