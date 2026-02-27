@@ -56,7 +56,7 @@ public class UserService implements UserDetailsService {
             );
         }
 
-        throw new UsernameNotFoundException("User not fount "+ email);
+        throw new UsernameNotFoundException("User not found "+ email);
 
     }
 
