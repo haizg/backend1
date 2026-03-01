@@ -1,18 +1,35 @@
 package com.example.backend1.controller;
 
+import com.example.backend1.model.Event;
 import com.example.backend1.model.Participant;
+import com.example.backend1.repository.EventRepository;
 import com.example.backend1.repository.ParticipantRepository;
+import jakarta.servlet.http.Part;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/events")
 @CrossOrigin(origins = "http://localhost:4200")
 public class EventController {
 
-    @Autowired
-    private ParticipantRepository participantRepository;
+    private final ParticipantRepository participantRepository;
+    private final EventRepository eventRepository;
+
+    public EventController(ParticipantRepository participantRepository,
+                           EventRepository eventRepository){
+        this.eventRepository=eventRepository;
+        this.participantRepository=participantRepository;
+    }
+
+    @GetMapping
+    public List<Event> getAllEvents(){
+        return eventRepository.findAll();
+    }
+
 
     @PostMapping("/join")
     public ResponseEntity<?> joinEvent(@RequestBody Participant participant) {
