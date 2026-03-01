@@ -75,9 +75,6 @@ public class UserService implements UserDetailsService {
         Optional<Organisateur> optionalOrg = organisateurRepository.findByEmail(email);
         if (optionalOrg.isPresent()){
             Organisateur org=optionalOrg.get();
-            if (!org.isVerified()){
-                return "NOT_VERIFIED";
-            }
             if (passwordEncoder.matches(password, org.getPassword())){
                 return jwtUtil.generateToken(org.getEmail(),org.getRole());
             }
