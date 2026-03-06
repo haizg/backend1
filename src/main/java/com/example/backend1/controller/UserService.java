@@ -68,7 +68,7 @@ public class UserService implements UserDetailsService {
         if (optionalUser.isPresent()){
             User user = optionalUser.get();
             if (passwordEncoder.matches(password,user.getPassword())){
-                return jwtUtil.generateToken(user.getEmail(), user.getRole());
+                return jwtUtil.generateToken(user.getEmail(), user.getRole(),  user.getNom(), user.getPrenom());
             }
             return null;
         }
@@ -76,7 +76,7 @@ public class UserService implements UserDetailsService {
         if (optionalOrg.isPresent()){
             Organisateur org=optionalOrg.get();
             if (passwordEncoder.matches(password, org.getPassword())){
-                return jwtUtil.generateToken(org.getEmail(),org.getRole());
+                return jwtUtil.generateToken(org.getEmail(),org.getRole(), org.getNom(), org.getPrenom());
             }
             return null;
         }
