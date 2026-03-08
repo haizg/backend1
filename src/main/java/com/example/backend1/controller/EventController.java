@@ -43,4 +43,15 @@ public class EventController {
         Participant savedParticipant = participantRepository.save(participant);
         return ResponseEntity.ok("Successfully registered! Check your email for verification.");
     }
+
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Event> getEventById(@PathVariable Long id){
+        return eventRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+
+
 }
