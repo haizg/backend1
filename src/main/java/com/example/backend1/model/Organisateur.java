@@ -10,6 +10,8 @@ public class Organisateur {
     private Long id;
     private String nom;
     private String prenom;
+    private String nomOrganisation;
+
 
     @Column(unique = true, nullable = false)
     private String email;
@@ -23,9 +25,10 @@ public class Organisateur {
     private boolean isVerified = false;
 
     public Organisateur() {}
-    public Organisateur(String nom, String prenom,String adresse, String email, Role role, Long cin) {
+    public Organisateur(String nom, String prenom,String adresse,String nomOrganisation, String email, Role role, Long cin) {
         this.nom = nom;
         this.prenom = prenom;
+        this.nomOrganisation = nomOrganisation;
         this.email = email;
         this.role = role;
     }
@@ -62,6 +65,12 @@ public class Organisateur {
 
     public String getEmail() {
         return email;
+    }
+    public String getNomOrganisation() {
+        return nomOrganisation;
+    }
+    public void setNomOrganisation(String nomOrganisation) {
+        this.nomOrganisation = nomOrganisation;
     }
 
     public void setEmail(String email) {

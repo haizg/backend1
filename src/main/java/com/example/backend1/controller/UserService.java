@@ -97,6 +97,10 @@ public class UserService implements UserDetailsService {
             newOrg.setRole(Role.ROLE_ORGANISATEUR);
             newOrg.setVerified(false);
             organisateurRepository.save(newOrg);
+            newOrg.setNomOrganisation(request.getNomOrganisation());
+            newOrg.setVerified(false);
+            organisateurRepository.save(newOrg);
+
         }else {
             User newUser = new User();
             newUser.setNom(request.getNom());

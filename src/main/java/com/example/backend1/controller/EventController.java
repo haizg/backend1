@@ -4,9 +4,11 @@ import com.example.backend1.model.Event;
 import com.example.backend1.model.Participant;
 import com.example.backend1.repository.EventRepository;
 import com.example.backend1.repository.ParticipantRepository;
+import com.example.backend1.util.JwtUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 
 import java.util.HashMap;
 import java.util.List;
@@ -19,20 +21,21 @@ public class EventController {
 
     private final ParticipantRepository participantRepository;
     private final EventRepository eventRepository;
+    private final JwtUtil jwtUtil;
 
     public EventController(ParticipantRepository participantRepository,
-                           EventRepository eventRepository) {
+                           EventRepository eventRepository, JwtUtil jwtUtil) {
         this.eventRepository = eventRepository;
         this.participantRepository = participantRepository;
+        this.jwtUtil = jwtUtil;
+
     }
 
-    // Get all events
     @GetMapping
     public List<Event> getAllEvents() {
         return eventRepository.findAll();
     }
 
-    // Get event by ID
     @GetMapping("/{id}")
     public ResponseEntity<Event> getEventById(@PathVariable Long id) {
         return eventRepository.findById(id)
@@ -40,7 +43,6 @@ public class EventController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // Join event
     @PostMapping("/join")
     public ResponseEntity<?> joinEvent(@RequestBody Participant participant) {
 
@@ -57,12 +59,13 @@ public class EventController {
         return ResponseEntity.ok("Successfully registered! Check your email for verification.");
     }
 
-    // Create event
     @PostMapping
     @PreAuthorize("hasRole('ROLE_ORGANISATEUR')")
-    public ResponseEntity<?> createEvent(@RequestBody EventRequest request) {
+    public ResponseEntity<?> createEvent(@RequestBody EventRequest request,Authentication authentication) {
 
         try {
+            String organisateurEmail = authentication.getName();
+
 
             Event event = new Event();
             event.setTitle(request.getTitle());
@@ -73,6 +76,7 @@ public class EventController {
             event.setLocation(request.getLocation());
             event.setImageUrl(request.getImageUrl());
             event.setMaxParticipants(request.getMaxParticipants());
+            event.setOrganisateurEmail(organisateurEmail);
 
             Event savedEvent = eventRepository.save(event);
 
@@ -89,13 +93,17 @@ public class EventController {
         }
     }
 
-    // Update event
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_ORGANISATEUR')")
-    public ResponseEntity<?> updateEvent(@PathVariable Long id, @RequestBody EventRequest request) {
+    public ResponseEntity<?> updateEvent(@PathVariable Long id, @RequestBody EventRequest request, Authentication authentication) {
+        String currentUserEmail = authentication.getName();
 
         return eventRepository.findById(id)
                 .map(event -> {
+                    if (!event.getOrganisateurEmail().equals(currentUserEmail)) {
+                        return ResponseEntity.status(403)
+                                .body(Map.of("error", "Vous ne pouvez modifier que vos propres événements"));
+                    }
 
                     event.setTitle(request.getTitle());
                     event.setDescription(request.getDescription());
@@ -116,23 +124,26 @@ public class EventController {
                 }).orElse(ResponseEntity.notFound().build());
     }
 
-    // Delete event
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_ORGANISATEUR')")
-    public ResponseEntity<?> deleteEvent(@PathVariable Long id) {
+    public ResponseEntity<?> deleteEvent(@PathVariable Long id, Authentication authentication) {
+        // Get logged-in user's email
+        String currentUserEmail = authentication.getName();
 
-        if (eventRepository.existsById(id)) {
+        // Find the event
+        return eventRepository.findById(id)
+                .map(event -> {
 
-            eventRepository.deleteById(id);
+                    if (!event.getOrganisateurEmail().equals(currentUserEmail)) {
+                        return ResponseEntity.status(403)
+                                .body(Map.of("error", "Vous ne pouvez supprimer que vos propres événements"));
+                    }
 
-            return ResponseEntity.ok(
-                    Map.of("message", "Event deleted successfully")
-            );
-        }
-
-        return ResponseEntity.notFound().build();
+                    eventRepository.deleteById(id);
+                    return ResponseEntity.ok(Map.of("message", "Event deleted successfully"));
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
 }
-
 
 

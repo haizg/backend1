@@ -6,6 +6,8 @@ public class SignUpRequest {
     private String email;
     private String password;
     private String role;
+    private String nomOrganisation;
+
 
     public String getNom() {
         return nom;
@@ -26,6 +28,13 @@ public class SignUpRequest {
     public String getEmail() {
         return email;
     }
+    public String getNomOrganisation() {
+        return nomOrganisation;
+    }
+    public void setNomOrganisation(String nomOrganisation) {
+        this.nomOrganisation = nomOrganisation;
+    }
+
 
     public void setEmail(String email) {
         this.email = email;

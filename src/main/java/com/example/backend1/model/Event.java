@@ -32,6 +32,8 @@ public class Event {
 
     @Column(nullable = false)
     private String category;
+    @Column(nullable = false)
+    private String organisateurEmail;
 
     public Event (){}
     public Integer getMaxParticipants() {
@@ -106,6 +108,12 @@ public class Event {
 
     public String getCategory() {
         return category;
+    }
+    public String getOrganisateurEmail() {
+        return organisateurEmail;
+    }
+    public void setOrganisateurEmail(String organisateurEmail) {
+        this.organisateurEmail = organisateurEmail;
     }
 
     public void setCategory(String category) {
