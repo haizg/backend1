@@ -17,14 +17,14 @@ public class Participant {
     private Integer numberOfPeople;
 
     @Column(nullable = false)
-    private String eventId;
+    private Long eventId;
 
 
     private boolean verified = false;
 
     public Participant() {}
 
-    public Participant(String email, Integer numberOfPeople, String eventId) {
+    public Participant(String email, Integer numberOfPeople, Long eventId) {
         this.email = email;
         this.numberOfPeople = numberOfPeople;
         this.eventId = eventId;
@@ -40,8 +40,8 @@ public class Participant {
     public Integer getNumberOfPeople() { return numberOfPeople; }
     public void setNumberOfPeople(Integer numberOfPeople) { this.numberOfPeople = numberOfPeople; }
 
-    public String getEventName() { return eventId; }
-    public void setEventName(String eventName) { this.eventId = eventId; }
+    public Long getEventId() { return eventId; }
+    public void setEventId(Long eventId) { this.eventId = eventId; }
 
     public boolean isVerified() { return verified; }
     public void setVerified(boolean verified) { this.verified = verified; }

@@ -13,6 +13,7 @@ import org.springframework.security.core.Authentication;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/events")
@@ -144,6 +145,23 @@ public class EventController {
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
+
+
+    @GetMapping("/my-events")
+    public List<Event> getMyEvents(@RequestParam String email){
+        List<Participant> participations=participantRepository.findByEmail(email);
+        List<Long> eventIds=participations.stream()
+                .map(p-> p.getEventId())
+                .collect(Collectors.toList());
+        return eventRepository.findAllById(eventIds);
+
+    }
+
+    @GetMapping("/created")
+    public List<Event> getCreatedEvents(@RequestParam String email){
+        return eventRepository.findByOrganisateurEmail(email);
+    }
 }
+
 
 
