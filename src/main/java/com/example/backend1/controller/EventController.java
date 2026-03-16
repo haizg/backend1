@@ -13,6 +13,7 @@ import org.springframework.security.core.Authentication;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
@@ -23,13 +24,14 @@ public class EventController {
     private final ParticipantRepository participantRepository;
     private final EventRepository eventRepository;
     private final JwtUtil jwtUtil;
+    private final EmailService emailService;
 
     public EventController(ParticipantRepository participantRepository,
-                           EventRepository eventRepository, JwtUtil jwtUtil) {
+                           EventRepository eventRepository, JwtUtil jwtUtil, EmailService emailService) {
         this.eventRepository = eventRepository;
         this.participantRepository = participantRepository;
         this.jwtUtil = jwtUtil;
-
+        this.emailService = emailService;
     }
 
     @GetMapping
@@ -44,6 +46,10 @@ public class EventController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+
+
+
+
     @PostMapping("/join")
     public ResponseEntity<?> joinEvent(@RequestBody Participant participant) {
 
@@ -55,10 +61,22 @@ public class EventController {
             return ResponseEntity.badRequest().body("Number of people cannot be negative");
         }
 
-        Participant savedParticipant = participantRepository.save(participant);
+        String token= UUID.randomUUID().toString();
+        participant.setConfirmationToken(token);
+        participant.setVerified(false);
+
+        participantRepository.save(participant);
+
+        emailService.sendConfirmationEmail(participant.getEmail(),token);
 
         return ResponseEntity.ok("Successfully registered! Check your email for verification.");
     }
+
+
+
+
+
+
 
     @PostMapping
     @PreAuthorize("hasRole('ROLE_ORGANISATEUR')")
@@ -161,7 +179,25 @@ public class EventController {
     public List<Event> getCreatedEvents(@RequestParam String email){
         return eventRepository.findByOrganisateurEmail(email);
     }
+
+
+    @GetMapping("/confirm")
+    public ResponseEntity<?> confirmPArticipant (@RequestParam String token){
+        return participantRepository.findByConfirmationToken(token)
+                .map(participant -> {
+                    participant.setVerified(true);
+                    participantRepository.save(participant);
+                    return ResponseEntity.ok("Participation confirmée avec succès!");
+                })
+                .orElse(ResponseEntity.badRequest().build());
+    }
+
+
+
 }
+
+
+
 
 
 

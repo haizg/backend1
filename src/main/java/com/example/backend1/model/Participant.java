@@ -22,6 +22,12 @@ public class Participant {
 
     private boolean verified = false;
 
+    @Column(unique = true)
+    private String confirmationToken;
+
+
+
+
     public Participant() {}
 
     public Participant(String email, Integer numberOfPeople, Long eventId) {
@@ -45,4 +51,12 @@ public class Participant {
 
     public boolean isVerified() { return verified; }
     public void setVerified(boolean verified) { this.verified = verified; }
+
+    public String getConfirmationToken() {
+        return confirmationToken;
+    }
+
+    public void setConfirmationToken(String confirmationToken) {
+        this.confirmationToken = confirmationToken;
+    }
 }
