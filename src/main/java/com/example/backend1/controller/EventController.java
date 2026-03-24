@@ -57,9 +57,6 @@ public class EventController {
             return ResponseEntity.badRequest().body("Email is required");
         }
 
-        if (participant.getNumberOfPeople() == null || participant.getNumberOfPeople() < 0) {
-            return ResponseEntity.badRequest().body("Number of people cannot be negative");
-        }
 
         String token= UUID.randomUUID().toString();
         participant.setConfirmationToken(token);

@@ -15,7 +15,7 @@ public class EmailService {
     private JavaMailSender mailSender;
 
     public void sendConfirmationEmail (String toEmail,String token){
-        String confirmationLink = "http://localhost:4200/api/confirm?token=" + token;
+        String confirmationLink = "http://localhost:4200/confirm?token=" + token;
 
         try {
             MimeMessage message = mailSender.createMimeMessage();

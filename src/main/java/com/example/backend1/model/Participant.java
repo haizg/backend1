@@ -13,8 +13,6 @@ public class Participant {
     @Column(nullable = false)
     private String email;
 
-    @Column(nullable = false)
-    private Integer numberOfPeople;
 
     @Column(nullable = false)
     private Long eventId;
@@ -32,7 +30,6 @@ public class Participant {
 
     public Participant(String email, Integer numberOfPeople, Long eventId) {
         this.email = email;
-        this.numberOfPeople = numberOfPeople;
         this.eventId = eventId;
     }
 
@@ -43,8 +40,6 @@ public class Participant {
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
 
-    public Integer getNumberOfPeople() { return numberOfPeople; }
-    public void setNumberOfPeople(Integer numberOfPeople) { this.numberOfPeople = numberOfPeople; }
 
     public Long getEventId() { return eventId; }
     public void setEventId(Long eventId) { this.eventId = eventId; }
