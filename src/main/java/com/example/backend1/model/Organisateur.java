@@ -22,7 +22,8 @@ public class Organisateur {
     private Role role = Role.ROLE_ORGANISATEUR;
 
 
-    private boolean isVerified = false;
+    @Column(nullable = false)
+    private boolean verified = false;
 
     public Organisateur() {}
     public Organisateur(String nom, String prenom,String adresse,String nomOrganisation, String email, Role role, Long cin) {
@@ -43,9 +44,12 @@ public class Organisateur {
     }
 
 
-    public boolean isVerified() { return isVerified; }
-    public void setVerified(boolean verified) { isVerified = verified; }
-
+    public boolean isVerified() {
+        return verified;
+    }
+    public void setVerified(boolean verified) {
+        this.verified = verified;
+    }
 
     public String getNom() {
         return nom;
