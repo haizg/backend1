@@ -35,8 +35,36 @@ public class EventController {
     }
 
     @GetMapping
-    public List<Event> getAllEvents() {
-        return eventRepository.findAll();
+    public List<Map<String, Object>> getAllEvents() {
+        List<Event> events = eventRepository.findAll();
+
+        return events.stream().map(event -> {
+            int participantCount = participantRepository.countByEventIdAndVerifiedTrue(event.getId());
+
+            Map<String, Object> eventData = new HashMap<>();
+
+            eventData.put("id", event.getId());
+            eventData.put("title", event.getTitle());
+            eventData.put("description", event.getDescription());
+            eventData.put("date", event.getDate());
+            eventData.put("time", event.getTime());
+            eventData.put("location", event.getLocation());
+            eventData.put("imageUrl", event.getImageUrl());
+            eventData.put("category", event.getCategory());
+            eventData.put("organisateurEmail", event.getOrganisateurEmail());
+            eventData.put("maxParticipants", event.getMaxParticipants());
+
+            eventData.put("participantCount", participantCount);
+
+            boolean isFull = false;
+            if (event.getMaxParticipants() != null) {
+                isFull = participantCount >= event.getMaxParticipants();
+            }
+            eventData.put("isFull", isFull);
+
+            return eventData;
+
+        }).collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
@@ -143,10 +171,8 @@ public class EventController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_ORGANISATEUR')")
     public ResponseEntity<?> deleteEvent(@PathVariable Long id, Authentication authentication) {
-        // Get logged-in user's email
         String currentUserEmail = authentication.getName();
 
-        // Find the event
         return eventRepository.findById(id)
                 .map(event -> {
 

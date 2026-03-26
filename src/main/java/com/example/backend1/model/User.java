@@ -17,6 +17,9 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role = Role.ROLE_USER;
+    @Column(nullable = false)
+    private boolean verified = false;
+
     public User() {}
     public User(String nom, String prenom, String email, String password, Role role) {
         this.nom = nom;
@@ -69,5 +72,11 @@ public class User {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+    public boolean isVerified() {
+        return verified;
+    }
+    public void setVerified(boolean verified) {
+        this.verified = verified;
     }
 }

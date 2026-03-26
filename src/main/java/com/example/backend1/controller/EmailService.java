@@ -45,7 +45,7 @@ public class EmailService {
     }
 
     public void sendPasswordResetEmail(String toEmail, String token) {
-        String resetLink = "http://localhost:4200/api/reset-password?token=" + token;
+        String resetLink = "http://localhost:4200/reset-password?token=" + token;
 
         try {
             MimeMessage message = mailSender.createMimeMessage();
@@ -77,4 +77,47 @@ public class EmailService {
             throw new RuntimeException("Failed to send password reset email", e);
         }
     }
+    public void sendVerificationEmail(String toEmail, String token, String userType) {
+        String verifyLink = "http://localhost:4200/verify-account?token=" + token;
+
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setTo(toEmail);
+
+            helper.setSubject("Vérifiez votre compte — Véra");
+
+            helper.setText(
+                    "<div style='font-family: Arial, sans-serif; padding: 20px;'>" +
+                            "<h2 style='color: #2a6262;'>Véra — Vérification de compte</h2>" +
+                            "<p>Bonjour,</p>" +
+                            "<p>Bienvenue sur Véra! Vous vous êtes inscrit en tant que <strong>" + userType + "</strong>.</p>" +
+                            "<p>Pour activer votre compte, veuillez cliquer sur le bouton ci-dessous:</p>" +
+                            "<a href='" + verifyLink + "' " +
+                            "style='display:inline-block; padding:12px 24px; background:#2a6262; color:white; " +
+                            "text-decoration:none; border-radius:8px; font-weight:bold;'>Vérifier mon compte</a>" +
+                            "<p style='margin-top:20px; color:#888; font-size:12px;'>Ce lien est valable 24 heures.</p>" +
+                            "<p style='color:#888; font-size:12px;'>Si vous n'avez pas créé de compte, ignorez cet email.</p>" +
+                            "<p>L'équipe Véra</p>" +
+                            "</div>",
+                    true
+            );
+
+            mailSender.send(message);
+
+            System.out.println("Verification email sent to: " + toEmail);
+
+        } catch (Exception e) {
+            System.err.println("Failed to send verification email: " + e.getMessage());
+            throw new RuntimeException("Failed to send verification email", e);
+        }
+
+
+    }
+
+
+
+
+
 }

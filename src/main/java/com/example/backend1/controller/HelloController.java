@@ -4,10 +4,12 @@ import com.example.backend1.model.Organisateur;
 import com.example.backend1.model.User;
 import com.example.backend1.repository.OrganisateurRepository;
 import com.example.backend1.repository.UserRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -27,22 +29,38 @@ public class HelloController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-        String result = userService.login(request.getEmail(),request.getPassword());
-        if (result==null){
-            return ResponseEntity.status(401).body("Invalid credentials");
+        try {
+            String token = userService.login(request.getEmail(), request.getPassword());
+
+            if (token != null) {
+                return ResponseEntity.ok(token);
+            } else {
+                return ResponseEntity.status(401)
+                        .body(Map.of("error", "Email ou mot de passe incorrect"));
+            }
+
+        } catch (RuntimeException e) {
+            if (e.getMessage().equals("ACCOUNT_NOT_VERIFIED")) {
+                return ResponseEntity.status(403)
+                        .body(Map.of("error", "ACCOUNT_NOT_VERIFIED"));
+            }
+
+            return ResponseEntity.status(500)
+                    .body(Map.of("error", "Erreur serveur"));
         }
-        if (result.equals("NOT_VERIFIED")){
-            return ResponseEntity.status(403).body("Account not verified yet");
-        }
-        return ResponseEntity.ok(result);
     }
 
 
     @PostMapping("/signup")
-    public ResponseEntity<?> signup(@RequestBody SignUpRequest request){
-        return userService.signUp(request);
-    }
+    public ResponseEntity<?> signup(@RequestBody SignUpRequest request) {
+        try {
+            userService.signUp(request); // service only does the logic
+            return ResponseEntity.ok("Utilisateur créé avec succès. Vérifiez votre email.");
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erreur lors de l'inscription : " + e.getMessage());
+        }
 
 
-
-}
+    }}

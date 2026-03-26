@@ -13,5 +13,6 @@ public interface ParticipantRepository extends JpaRepository<Participant, Long> 
     List<Participant> findByEmail(String email);
 
     Optional<Participant> findByConfirmationToken(String token);
+    int countByEventIdAndVerifiedTrue(Long eventId);
 
 }
