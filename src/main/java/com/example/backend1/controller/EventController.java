@@ -216,6 +216,11 @@ public class EventController {
     }
 
 
+    @GetMapping("/{id}/participants")
+    public ResponseEntity<?> getEventParticipants(@PathVariable Long id) {
+        List<Participant> participants = participantRepository.findByEventId(id);
+        return ResponseEntity.ok(participants);
+    }
 
 }
 

@@ -15,4 +15,5 @@ public interface ParticipantRepository extends JpaRepository<Participant, Long> 
     Optional<Participant> findByConfirmationToken(String token);
     int countByEventIdAndVerifiedTrue(Long eventId);
 
+    List<Participant> findByEventId(Long id);
 }
