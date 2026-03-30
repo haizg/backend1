@@ -222,6 +222,15 @@ public class EventController {
         return ResponseEntity.ok(participants);
     }
 
+    @DeleteMapping("/admin/{id}")
+    public ResponseEntity<?> adminDeleteEvent(@PathVariable Long id) {
+        if (!eventRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        eventRepository.deleteById(id);
+        return ResponseEntity.ok("Event deleted");
+    }
+
 }
 
 

@@ -16,4 +16,6 @@ public interface ParticipantRepository extends JpaRepository<Participant, Long> 
     int countByEventIdAndVerifiedTrue(Long eventId);
 
     List<Participant> findByEventId(Long id);
+
+    long countByVerified(boolean b);
 }
