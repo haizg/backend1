@@ -2,6 +2,7 @@ package com.example.backend1.controller;
 
 import com.example.backend1.model.User;
 import com.example.backend1.repository.EventRepository;
+import com.example.backend1.repository.OrganisateurRepository;
 import com.example.backend1.repository.UserRepository;
 import com.example.backend1.repository.ParticipantRepository;
 import org.springframework.http.ResponseEntity;
@@ -17,13 +18,16 @@ public class AdminController {
     private final ParticipantRepository participantRepository;
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
+    private final OrganisateurRepository organisateurRepository ;
 
 
     public AdminController(ParticipantRepository participantRepository,
-                           EventRepository eventRepository,UserRepository userRepository) {
+                           EventRepository eventRepository,UserRepository userRepository,
+                           OrganisateurRepository organisateurRepository) {
         this.eventRepository = eventRepository;
         this.participantRepository = participantRepository;
         this.userRepository=userRepository;
+        this.organisateurRepository=organisateurRepository;
     }
 
     @GetMapping("/stats")
@@ -53,6 +57,20 @@ public class AdminController {
         }
         userRepository.deleteById(String.valueOf(id));
         return ResponseEntity.ok("User deleted");
+    }
+
+    @GetMapping("/organisateurs")
+    public ResponseEntity<?> getAllOrganisateurs() {
+        return ResponseEntity.ok(organisateurRepository.findAll());
+    }
+
+    @DeleteMapping("/organisateurs/{id}")
+    public ResponseEntity<?> deleteOrganisateur(@PathVariable Long id) {
+        if (!organisateurRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        organisateurRepository.deleteById(id);
+        return ResponseEntity.ok("Organisateur deleted");
     }
 
 
