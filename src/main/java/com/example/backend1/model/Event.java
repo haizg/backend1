@@ -35,6 +35,10 @@ public class Event {
     @Column(nullable = false)
     private String organisateurEmail;
 
+    @Column(nullable = false)
+    private boolean approved = false;
+
+
     public Event (){}
     public Integer getMaxParticipants() {
         return maxParticipants;
@@ -119,4 +123,8 @@ public class Event {
     public void setCategory(String category) {
         this.category = category;
     }
+
+    public boolean isApproved() { return approved; }
+    public void setApproved(boolean approved) { this.approved = approved; }
+
 }

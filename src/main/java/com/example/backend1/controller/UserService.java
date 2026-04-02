@@ -84,7 +84,7 @@ public class UserService implements UserDetailsService {
                 if (!user.isVerified()) {
                     throw new RuntimeException("ACCOUNT_NOT_VERIFIED");
                 }
-                return jwtUtil.generateToken(user.getEmail(), user.getRole(),  user.getNom(), user.getPrenom());
+                return jwtUtil.generateToken(user.getEmail(), user.getRole(),  user.getNom(), user.getPrenom(),user.isVerified());
             }
             return null;
         }
@@ -95,7 +95,7 @@ public class UserService implements UserDetailsService {
                 if (!org.isVerified()) {
                     throw new RuntimeException("ACCOUNT_NOT_VERIFIED");
                 }
-                return jwtUtil.generateToken(org.getEmail(),org.getRole(), org.getNom(), org.getPrenom());
+                return jwtUtil.generateToken(org.getEmail(),org.getRole(), org.getNom(), org.getPrenom(),org.isVerified());
             }
             return null;
         }

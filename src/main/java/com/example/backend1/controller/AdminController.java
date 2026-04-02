@@ -10,6 +10,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -32,20 +34,7 @@ public class AdminController {
         this.passwordEncoder = passwordEncoder;
     }
 
-    @GetMapping("/stats")
-    public ResponseEntity<?> getStats() {
-        long totalUsers = userRepository.count();
-        long totalEvents = eventRepository.count();
-        long totalParticipants = participantRepository.count();
-        long verifiedParticipants = participantRepository.countByVerified(true);
 
-        return ResponseEntity.ok(Map.of(
-                "totalUsers", totalUsers,
-                "totalEvents", totalEvents,
-                "totalParticipants", totalParticipants,
-                "verifiedParticipants", verifiedParticipants
-        ));
-    }
 
     @GetMapping("/users")
     public ResponseEntity<List<User>> getAllUsers() {
@@ -132,4 +121,63 @@ public class AdminController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
+
+    @GetMapping("/events/all")
+    public List<Map<String, Object>> getAllEventsAdmin() {
+        List<Event> events = eventRepository.findAll();
+        return events.stream().map(event -> {
+            int participantCount = participantRepository.countByEventIdAndVerifiedTrue(event.getId());
+            Map<String, Object> eventData = new HashMap<>();
+            eventData.put("id", event.getId());
+            eventData.put("title", event.getTitle());
+            eventData.put("description", event.getDescription());
+            eventData.put("date", event.getDate());
+            eventData.put("time", event.getTime());
+            eventData.put("location", event.getLocation());
+            eventData.put("imageUrl", event.getImageUrl());
+            eventData.put("category", event.getCategory());
+            eventData.put("organisateurEmail", event.getOrganisateurEmail());
+            eventData.put("maxParticipants", event.getMaxParticipants());
+            eventData.put("participantCount", participantCount);
+            eventData.put("approved", event.isApproved());
+            boolean isFull = event.getMaxParticipants() != null && participantCount >= event.getMaxParticipants();
+            eventData.put("isFull", isFull);
+            return eventData;
+        }).collect(Collectors.toList());
+    }
+
+    @PutMapping("/events/{id}/approve")
+    public ResponseEntity<?> approveEvent(@PathVariable Long id) {
+        return eventRepository.findById(id).map(event -> {
+            event.setApproved(!event.isApproved()); // toggle
+            eventRepository.save(event);
+            return ResponseEntity.ok(Map.of("approved", event.isApproved()));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/organisateurs/{id}/verify")
+    public ResponseEntity<?> toggleVerifyOrganisateur(@PathVariable Long id) {
+        return organisateurRepository.findById(id).map(org -> {
+            org.setVerified(!org.isVerified()); // toggle
+            organisateurRepository.save(org);
+            return ResponseEntity.ok(Map.of("verified", org.isVerified()));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/stats")
+    public ResponseEntity<?> getStats() {
+        long totalUsers = userRepository.count();
+        long totalEvents = eventRepository.count();
+        long totalParticipants = participantRepository.count();
+        long verifiedParticipants = participantRepository.countByVerified(true);
+        long pendingEvents = eventRepository.findByApprovedFalse().size();
+
+        return ResponseEntity.ok(Map.of(
+                "totalUsers", totalUsers,
+                "totalEvents", totalEvents,
+                "totalParticipants", totalParticipants,
+                "verifiedParticipants", verifiedParticipants,
+                "pendingEvents", pendingEvents
+        ));
+    }
 }

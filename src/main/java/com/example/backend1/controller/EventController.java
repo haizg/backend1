@@ -1,8 +1,10 @@
 package com.example.backend1.controller;
 
 import com.example.backend1.model.Event;
+import com.example.backend1.model.Organisateur;
 import com.example.backend1.model.Participant;
 import com.example.backend1.repository.EventRepository;
+import com.example.backend1.repository.OrganisateurRepository;
 import com.example.backend1.repository.ParticipantRepository;
 import com.example.backend1.util.JwtUtil;
 import org.springframework.http.ResponseEntity;
@@ -25,21 +27,26 @@ public class EventController {
     private final EventRepository eventRepository;
     private final JwtUtil jwtUtil;
     private final EmailService emailService;
+    private final OrganisateurRepository organisateurRepository;
 
     public EventController(ParticipantRepository participantRepository,
-                           EventRepository eventRepository, JwtUtil jwtUtil, EmailService emailService) {
+                           EventRepository eventRepository, JwtUtil jwtUtil,
+                           EmailService emailService, OrganisateurRepository organisateurRepository) {
         this.eventRepository = eventRepository;
         this.participantRepository = participantRepository;
         this.jwtUtil = jwtUtil;
         this.emailService = emailService;
+        this.organisateurRepository=organisateurRepository;
     }
 
     @GetMapping
     public List<Map<String, Object>> getAllEvents() {
-        List<Event> events = eventRepository.findAll();
+        List<Event> events = eventRepository.findByApprovedTrue();
+
 
         return events.stream().map(event -> {
             int participantCount = participantRepository.countByEventIdAndVerifiedTrue(event.getId());
+            Organisateur org = organisateurRepository.findByEmail(event.getOrganisateurEmail()).orElse(null);
 
             Map<String, Object> eventData = new HashMap<>();
 
@@ -51,6 +58,7 @@ public class EventController {
             eventData.put("location", event.getLocation());
             eventData.put("imageUrl", event.getImageUrl());
             eventData.put("category", event.getCategory());
+            eventData.put("organisateurVerified", org != null && org.isVerified());
             eventData.put("organisateurEmail", event.getOrganisateurEmail());
             eventData.put("maxParticipants", event.getMaxParticipants());
 
@@ -110,6 +118,12 @@ public class EventController {
         try {
             String organisateurEmail = authentication.getName();
 
+            Organisateur org = organisateurRepository.findByEmail(organisateurEmail).orElse(null);
+            if (org == null || !org.isVerified()) {
+                return ResponseEntity.status(403)
+                        .body(Map.of("error", "ACCOUNT_NOT_VERIFIED"));
+            }
+
 
             Event event = new Event();
             event.setTitle(request.getTitle());
@@ -121,6 +135,7 @@ public class EventController {
             event.setImageUrl(request.getImageUrl());
             event.setMaxParticipants(request.getMaxParticipants());
             event.setOrganisateurEmail(organisateurEmail);
+            event.setApproved(false);
 
             Event savedEvent = eventRepository.save(event);
 
