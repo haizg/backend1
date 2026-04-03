@@ -25,8 +25,12 @@ public class Organisateur {
     @Column(nullable = false)
     private boolean verified = false;
 
+    @Column(nullable = false, name = "admin_verified")
+    private boolean adminVerified = false;
+
+
     public Organisateur() {}
-    public Organisateur(String nom, String prenom,String adresse,String nomOrganisation, String email, Role role, Long cin) {
+    public Organisateur(String nom, String prenom,String adresse,String nomOrganisation, String email, Role role, Boolean adminVerified){
         this.nom = nom;
         this.prenom = prenom;
         this.nomOrganisation = nomOrganisation;
@@ -87,4 +91,13 @@ public class Organisateur {
     public void setRole(Role role) {
         this.role = role;
     }
+
+    public boolean isAdminVerified() {
+        return adminVerified;
+    }
+
+    public void setAdminVerified(boolean adminVerified) {
+        this.adminVerified = adminVerified;
+    }
+
 }

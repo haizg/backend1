@@ -155,14 +155,17 @@ public class AdminController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
+// AdminController.java
+
     @PutMapping("/organisateurs/{id}/verify")
     public ResponseEntity<?> toggleVerifyOrganisateur(@PathVariable Long id) {
         return organisateurRepository.findById(id).map(org -> {
-            org.setVerified(!org.isVerified()); // toggle
+            org.setAdminVerified(!org.isAdminVerified()); // toggle adminVerified only
             organisateurRepository.save(org);
-            return ResponseEntity.ok(Map.of("verified", org.isVerified()));
+            return ResponseEntity.ok(Map.of("adminVerified", org.isAdminVerified()));
         }).orElse(ResponseEntity.notFound().build());
     }
+
 
     @GetMapping("/stats")
     public ResponseEntity<?> getStats() {

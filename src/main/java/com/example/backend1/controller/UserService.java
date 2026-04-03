@@ -117,7 +117,7 @@ public class UserService implements UserDetailsService {
             newOrg.setPassword(encodedPassword);
             newOrg.setRole(Role.ROLE_ORGANISATEUR);
             newOrg.setVerified(false);
-            organisateurRepository.save(newOrg);
+            newOrg.setAdminVerified(false);
             newOrg.setNomOrganisation(request.getNomOrganisation());
             newOrg.setVerified(false);
             organisateurRepository.save(newOrg);
