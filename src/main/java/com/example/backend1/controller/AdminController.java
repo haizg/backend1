@@ -38,7 +38,7 @@ public class AdminController {
 
     @GetMapping("/users")
     public ResponseEntity<List<User>> getAllUsers() {
-        return ResponseEntity.ok(userRepository.findAll());
+        return ResponseEntity.ok(userRepository.findByRoleNot(Role.ROLE_ADMIN));
     }
 
     @DeleteMapping("/users/{id}")
@@ -84,13 +84,7 @@ public class AdminController {
 
 
 
-    @PostMapping("/users")
-    public ResponseEntity<?> createUser(@RequestBody User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setVerified(true);
-        user.setRole(Role.ROLE_USER);
-        return ResponseEntity.ok(userRepository.save(user));
-    }
+
 
     @PutMapping("/users/{id}")
     public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody User updated) {
@@ -102,13 +96,7 @@ public class AdminController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping("/organisateurs")
-    public ResponseEntity<?> createOrganisateur(@RequestBody Organisateur org) {
-        org.setPassword(passwordEncoder.encode(org.getPassword()));
-        org.setVerified(true);
-        org.setRole(Role.ROLE_ORGANISATEUR);
-        return ResponseEntity.ok(organisateurRepository.save(org));
-    }
+
 
     @PutMapping("/organisateurs/{id}")
     public ResponseEntity<?> updateOrganisateur(@PathVariable Long id, @RequestBody Organisateur updated) {
@@ -149,7 +137,7 @@ public class AdminController {
     @PutMapping("/events/{id}/approve")
     public ResponseEntity<?> approveEvent(@PathVariable Long id) {
         return eventRepository.findById(id).map(event -> {
-            event.setApproved(!event.isApproved()); // toggle
+            event.setApproved(true); // toggle
             eventRepository.save(event);
             return ResponseEntity.ok(Map.of("approved", event.isApproved()));
         }).orElse(ResponseEntity.notFound().build());
