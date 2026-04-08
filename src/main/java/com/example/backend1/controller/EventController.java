@@ -7,6 +7,7 @@ import com.example.backend1.repository.EventRepository;
 import com.example.backend1.repository.OrganisateurRepository;
 import com.example.backend1.repository.ParticipantRepository;
 import com.example.backend1.util.JwtUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -246,6 +247,27 @@ public class EventController {
         return ResponseEntity.ok("Event deleted");
     }
 
+
+    // EventController.java
+    @PutMapping("/api/events/{id}/capacity")
+    public ResponseEntity<?> updateCapacity(@PathVariable Long id,
+                                            @RequestBody Map<String, Integer> body,
+                                            HttpServletRequest request) {
+        String email = jwtUtil.extractEmail(
+                request.getHeader("Authorization").replace("Bearer ", "")
+        );
+
+        return eventRepository.findById(id).map(event -> {
+            // Only the organizer of this event can update capacity
+            if (!event.getOrganisateurEmail().equals(email)) {
+                return ResponseEntity.status(403).body("Unauthorized");
+            }
+            int newCap = body.get("maxParticipants");
+            event.setMaxParticipants(newCap);
+            eventRepository.save(event);
+            return ResponseEntity.ok(Map.of("maxParticipants", newCap));
+        }).orElse(ResponseEntity.notFound().build());
+    }
 
 
 }
