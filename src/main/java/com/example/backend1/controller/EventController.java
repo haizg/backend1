@@ -249,7 +249,7 @@ public class EventController {
 
 
     // EventController.java
-    @PutMapping("/api/events/{id}/capacity")
+    @PutMapping("/{id}/capacity")
     public ResponseEntity<?> updateCapacity(@PathVariable Long id,
                                             @RequestBody Map<String, Integer> body,
                                             HttpServletRequest request) {

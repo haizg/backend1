@@ -23,15 +23,18 @@ public class AdminController {
     private final UserRepository userRepository;
     private final OrganisateurRepository organisateurRepository ;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
     public AdminController(ParticipantRepository participantRepository,
                            EventRepository eventRepository, UserRepository userRepository,
-                           OrganisateurRepository organisateurRepository, PasswordEncoder passwordEncoder) {
+                           OrganisateurRepository organisateurRepository, PasswordEncoder passwordEncoder,
+                           EmailService emailService) {
         this.eventRepository = eventRepository;
         this.participantRepository = participantRepository;
         this.userRepository=userRepository;
         this.organisateurRepository=organisateurRepository;
         this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
     }
 
 
@@ -137,19 +140,31 @@ public class AdminController {
     @PutMapping("/events/{id}/approve")
     public ResponseEntity<?> approveEvent(@PathVariable Long id) {
         return eventRepository.findById(id).map(event -> {
-            event.setApproved(true); // toggle
+            event.setApproved(true);
             eventRepository.save(event);
-            return ResponseEntity.ok(Map.of("approved", event.isApproved()));
+
+            // Notify organiser their event is now live
+            emailService.sendEventApprovedEmail(
+                    event.getOrganisateurEmail(),
+                    event.getTitle()
+            );
+
+            return ResponseEntity.ok(Map.of("approved", true));
         }).orElse(ResponseEntity.notFound().build());
     }
 
-// AdminController.java
 
     @PutMapping("/organisateurs/{id}/verify")
     public ResponseEntity<?> toggleVerifyOrganisateur(@PathVariable Long id) {
         return organisateurRepository.findById(id).map(org -> {
-            org.setAdminVerified(!org.isAdminVerified()); // toggle adminVerified only
+            org.setAdminVerified(!org.isAdminVerified());
             organisateurRepository.save(org);
+
+            // Send email only when account becomes verified (not when removing)
+            if (org.isAdminVerified()) {
+                emailService.sendOrganisateurVerifiedEmail(org.getEmail());
+            }
+
             return ResponseEntity.ok(Map.of("adminVerified", org.isAdminVerified()));
         }).orElse(ResponseEntity.notFound().build());
     }

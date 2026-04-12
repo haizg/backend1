@@ -211,6 +211,112 @@ public class EmailService {
 
     }
 
+    // Add these two methods to your existing EmailService.java
+
+    public void sendOrganisateurVerifiedEmail(String toEmail) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setTo(toEmail);
+            helper.setSubject("Votre compte organisateur est vérifié — Invitini");
+            helper.setText(
+                    "<div style='font-family: Georgia, serif; max-width: 600px; margin: 0 auto; background: #f8f5f0; padding: 40px 20px;'>" +
+                            "<div style='text-align: center; margin-bottom: 30px;'>" +
+                            "<div style='width: 60px; height: 2px; background: #2a6262; margin: 0 auto 20px;'></div>" +
+                            "<h1 style='color: #2a6262; font-size: 32px; margin: 0; letter-spacing: 2px;'>Invitini</h1>" +
+                            "<div style='width: 60px; height: 2px; background: #2a6262; margin: 20px auto 0;'></div>" +
+                            "</div>" +
+                            "<div style='background: white; border-radius: 12px; padding: 40px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 2px solid #e8e4dc;'>" +
+                            "<div style='text-align: center; padding: 20px;'>" +
+                            "<div style='width: 70px; height: 70px; background: #e8f5e9; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;'>" +
+                            "<span style='font-size: 32px;'>✓</span>" +
+                            "</div>" +
+                            "<p style='font-size: 14px; color: #2a6262; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 20px 0; font-weight: 600;'>Compte vérifié</p>" +
+                            "<h2 style='color: #1a1a1a; font-size: 24px; margin: 0 0 20px 0;'>Félicitations !</h2>" +
+                            "<div style='width: 80%; height: 1px; background: rgba(42,98,98,0.2); margin: 20px auto;'></div>" +
+                            "<p style='color: #666; font-size: 16px; line-height: 1.6; margin: 20px 0;'>" +
+                            "Votre compte organisateur a été <strong style='color: #2a6262;'>vérifié par notre équipe</strong>." +
+                            "</p>" +
+                            "<p style='color: #666; font-size: 15px; line-height: 1.6; margin: 20px 0;'>" +
+                            "Vous pouvez désormais créer et publier des événements sur la plateforme Invitini." +
+                            "</p>" +
+                            "<div style='margin: 35px 0;'>" +
+                            "<a href='http://localhost:4200/home' style='display: inline-block; background: #2a6262; color: white; padding: 16px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 15px; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(42,98,98,0.3);'>" +
+                            "Créer mon premier événement" +
+                            "</a>" +
+                            "</div>" +
+                            "<div style='width: 80%; height: 1px; background: rgba(42,98,98,0.2); margin: 20px auto;'></div>" +
+                            "<p style='color: #2a6262; font-size: 14px; font-weight: 600; margin: 25px 0 0 0;'>L'équipe Invitini</p>" +
+                            "</div>" +
+                            "</div>" +
+                            "<div style='text-align: center; margin-top: 30px; color: #999; font-size: 12px;'>" +
+                            "<p>© 2026 Invitini - Plateforme d'événements culturels</p>" +
+                            "</div>" +
+                            "</div>",
+                    true
+            );
+
+            mailSender.send(message);
+            System.out.println("Organisateur verified email sent to: " + toEmail);
+
+        } catch (Exception e) {
+            // Email failure must NOT break the main logic
+            System.err.println("Failed to send organisateur verified email: " + e.getMessage());
+        }
+    }
+
+    public void sendEventApprovedEmail(String toEmail, String eventTitle) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setTo(toEmail);
+            helper.setSubject("Votre événement est approuvé — Invitini");
+            helper.setText(
+                    "<div style='font-family: Georgia, serif; max-width: 600px; margin: 0 auto; background: #f8f5f0; padding: 40px 20px;'>" +
+                            "<div style='text-align: center; margin-bottom: 30px;'>" +
+                            "<div style='width: 60px; height: 2px; background: #2a6262; margin: 0 auto 20px;'></div>" +
+                            "<h1 style='color: #2a6262; font-size: 32px; margin: 0; letter-spacing: 2px;'>Invitini</h1>" +
+                            "<div style='width: 60px; height: 2px; background: #2a6262; margin: 20px auto 0;'></div>" +
+                            "</div>" +
+                            "<div style='background: white; border-radius: 12px; padding: 40px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 2px solid #e8e4dc;'>" +
+                            "<div style='text-align: center; padding: 20px;'>" +
+                            "<div style='width: 70px; height: 70px; background: #e3f2fd; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;'>" +
+                            "<span style='font-size: 32px;'>📅</span>" +
+                            "</div>" +
+                            "<p style='font-size: 14px; color: #2a6262; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 20px 0; font-weight: 600;'>Événement approuvé</p>" +
+                            "<h2 style='color: #1a1a1a; font-size: 24px; margin: 0 0 20px 0;'>Votre événement est en ligne !</h2>" +
+                            "<div style='width: 80%; height: 1px; background: rgba(42,98,98,0.2); margin: 20px auto;'></div>" +
+                            "<p style='color: #666; font-size: 16px; line-height: 1.6; margin: 20px 0;'>" +
+                            "Votre événement <strong style='color: #2a6262;'>\"" + eventTitle + "\"</strong> a été approuvé par notre équipe." +
+                            "</p>" +
+                            "<p style='color: #666; font-size: 15px; line-height: 1.6; margin: 20px 0;'>" +
+                            "Il est désormais visible par tous les utilisateurs de la plateforme et les inscriptions sont ouvertes." +
+                            "</p>" +
+                            "<div style='margin: 35px 0;'>" +
+                            "<a href='http://localhost:4200/events' style='display: inline-block; background: #2a6262; color: white; padding: 16px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 15px; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(42,98,98,0.3);'>" +
+                            "Voir mon événement" +
+                            "</a>" +
+                            "</div>" +
+                            "<div style='width: 80%; height: 1px; background: rgba(42,98,98,0.2); margin: 20px auto;'></div>" +
+                            "<p style='color: #2a6262; font-size: 14px; font-weight: 600; margin: 25px 0 0 0;'>L'équipe Invitini</p>" +
+                            "</div>" +
+                            "</div>" +
+                            "<div style='text-align: center; margin-top: 30px; color: #999; font-size: 12px;'>" +
+                            "<p>© 2026 Invitini - Plateforme d'événements culturels</p>" +
+                            "</div>" +
+                            "</div>",
+                    true
+            );
+
+            mailSender.send(message);
+            System.out.println("Event approved email sent to: " + toEmail);
+
+        } catch (Exception e) {
+            System.err.println("Failed to send event approved email: " + e.getMessage());
+        }
+    }
 
 
 
