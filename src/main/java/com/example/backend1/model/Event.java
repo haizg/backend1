@@ -34,6 +34,8 @@ public class Event {
     private String category;
     @Column(nullable = false)
     private String organisateurEmail;
+    @Column(length = 3000)
+    private String program;
 
     @Column(nullable = false)
     private boolean approved = false;
@@ -123,7 +125,8 @@ public class Event {
     public void setCategory(String category) {
         this.category = category;
     }
-
+    public String getProgram() { return program; }
+    public void setProgram(String program) { this.program = program; }
     public boolean isApproved() { return approved; }
     public void setApproved(boolean approved) { this.approved = approved; }
 

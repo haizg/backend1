@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
+import org.springframework.transaction.annotation.Transactional;
+
 
 import java.util.HashMap;
 import java.util.List;
@@ -137,7 +139,7 @@ public class EventController {
             event.setMaxParticipants(request.getMaxParticipants());
             event.setOrganisateurEmail(organisateurEmail);
             event.setApproved(false);
-
+            event.setProgram(request.getProgram());
             Event savedEvent = eventRepository.save(event);
 
             Map<String, Object> response = new HashMap<>();
@@ -173,7 +175,7 @@ public class EventController {
                     event.setLocation(request.getLocation());
                     event.setImageUrl(request.getImageUrl());
                     event.setMaxParticipants(request.getMaxParticipants());
-
+                    event.setProgram(request.getProgram());
                     Event updatedEvent = eventRepository.save(event);
 
                     return ResponseEntity.ok(Map.of(
@@ -186,21 +188,17 @@ public class EventController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_ORGANISATEUR')")
+    @Transactional  // ← ADD THIS
     public ResponseEntity<?> deleteEvent(@PathVariable Long id, Authentication authentication) {
         String currentUserEmail = authentication.getName();
-
-        return eventRepository.findById(id)
-                .map(event -> {
-
-                    if (!event.getOrganisateurEmail().equals(currentUserEmail)) {
-                        return ResponseEntity.status(403)
-                                .body(Map.of("error", "Vous ne pouvez supprimer que vos propres événements"));
-                    }
-
-                    eventRepository.deleteById(id);
-                    return ResponseEntity.ok(Map.of("message", "Event deleted successfully"));
-                })
-                .orElse(ResponseEntity.notFound().build());
+        return eventRepository.findById(id).map(event -> {
+            if (!event.getOrganisateurEmail().equals(currentUserEmail)) {
+                return ResponseEntity.status(403).body(Map.of("error", "Non autorisé"));
+            }
+            participantRepository.deleteByEventId(id);
+            eventRepository.deleteById(id);
+            return ResponseEntity.ok(Map.of("message", "Événement supprimé"));
+        }).orElse(ResponseEntity.notFound().build());
     }
 
 
@@ -239,10 +237,10 @@ public class EventController {
     }
 
     @DeleteMapping("/admin/{id}")
+    @Transactional  // ← ADD THIS
     public ResponseEntity<?> adminDeleteEvent(@PathVariable Long id) {
-        if (!eventRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
+        if (!eventRepository.existsById(id)) return ResponseEntity.notFound().build();
+        participantRepository.deleteByEventId(id); // ← ajoute
         eventRepository.deleteById(id);
         return ResponseEntity.ok("Event deleted");
     }

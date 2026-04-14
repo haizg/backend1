@@ -8,6 +8,8 @@ public class EventRequest {
     private String time;
     private String location;
     private String imageUrl;
+    private String program;
+
     private Integer maxParticipants;
     public String getTitle() {
         return title;
@@ -32,6 +34,8 @@ public class EventRequest {
     public void setCategory(String category) {
         this.category = category;
     }
+    public String getProgram() { return program; }
+    public void setProgram(String program) { this.program = program; }
 
     public String getDate() {
         return date;

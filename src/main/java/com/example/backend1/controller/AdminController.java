@@ -7,12 +7,12 @@ import com.example.backend1.repository.UserRepository;
 import com.example.backend1.repository.ParticipantRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.stream.Collectors;
-
 
 @RestController
 @RequestMapping("/api/admin")
@@ -21,7 +21,7 @@ public class AdminController {
     private final ParticipantRepository participantRepository;
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
-    private final OrganisateurRepository organisateurRepository ;
+    private final OrganisateurRepository organisateurRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
 
@@ -31,13 +31,11 @@ public class AdminController {
                            EmailService emailService) {
         this.eventRepository = eventRepository;
         this.participantRepository = participantRepository;
-        this.userRepository=userRepository;
-        this.organisateurRepository=organisateurRepository;
+        this.userRepository = userRepository;
+        this.organisateurRepository = organisateurRepository;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
     }
-
-
 
     @GetMapping("/users")
     public ResponseEntity<List<User>> getAllUsers() {
@@ -45,12 +43,15 @@ public class AdminController {
     }
 
     @DeleteMapping("/users/{id}")
+    @Transactional
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
-        if (!userRepository.existsById(String.valueOf(id))) {
-            return ResponseEntity.notFound().build();
-        }
-        userRepository.deleteById(String.valueOf(id));
-        return ResponseEntity.ok("User deleted");
+        return userRepository.findById(String.valueOf(id)).map(user -> {
+            // Delete all participations of this user
+            participantRepository.deleteByEmail(user.getEmail());
+            // Delete the user
+            userRepository.deleteById(String.valueOf(id));
+            return ResponseEntity.ok("Utilisateur et ses participations supprimés");
+        }).orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/organisateurs")
@@ -59,14 +60,29 @@ public class AdminController {
     }
 
     @DeleteMapping("/organisateurs/{id}")
+    @Transactional
     public ResponseEntity<?> deleteOrganisateur(@PathVariable Long id) {
-        if (!organisateurRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        organisateurRepository.deleteById(id);
-        return ResponseEntity.ok("Organisateur deleted");
-    }
+        return organisateurRepository.findById(id).map(org -> {
+            // Get all events of this organizer
+            List<Event> orgEvents = eventRepository.findByOrganisateurEmail(org.getEmail());
 
+            // Delete all participations for each event
+            for (Event event : orgEvents) {
+                participantRepository.deleteByEventId(event.getId());
+            }
+
+            // Delete all events
+            eventRepository.deleteAll(orgEvents);
+
+            // Delete the organizer
+            organisateurRepository.deleteById(id);
+
+            return ResponseEntity.ok(Map.of(
+                    "message", "Organisateur et ses données supprimés",
+                    "eventsDeleted", orgEvents.size()
+            ));
+        }).orElse(ResponseEntity.notFound().build());
+    }
 
     @GetMapping("/user/{id}/participations")
     public ResponseEntity<?> getUserParticipations(@PathVariable Long id) {
@@ -85,10 +101,6 @@ public class AdminController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-
-
-
-
     @PutMapping("/users/{id}")
     public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody User updated) {
         return userRepository.findById(String.valueOf(id)).map(user -> {
@@ -98,8 +110,6 @@ public class AdminController {
             return ResponseEntity.ok(userRepository.save(user));
         }).orElse(ResponseEntity.notFound().build());
     }
-
-
 
     @PutMapping("/organisateurs/{id}")
     public ResponseEntity<?> updateOrganisateur(@PathVariable Long id, @RequestBody Organisateur updated) {
@@ -111,7 +121,6 @@ public class AdminController {
             return ResponseEntity.ok(organisateurRepository.save(org));
         }).orElse(ResponseEntity.notFound().build());
     }
-
 
     @GetMapping("/events/all")
     public List<Map<String, Object>> getAllEventsAdmin() {
@@ -153,7 +162,6 @@ public class AdminController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
-
     @PutMapping("/organisateurs/{id}/verify")
     public ResponseEntity<?> toggleVerifyOrganisateur(@PathVariable Long id) {
         return organisateurRepository.findById(id).map(org -> {
@@ -168,7 +176,6 @@ public class AdminController {
             return ResponseEntity.ok(Map.of("adminVerified", org.isAdminVerified()));
         }).orElse(ResponseEntity.notFound().build());
     }
-
 
     @GetMapping("/stats")
     public ResponseEntity<?> getStats() {
