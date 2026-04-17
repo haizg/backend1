@@ -155,51 +155,31 @@ public class EventController {
         }
     }
 
-    @PutMapping("/{id}")
+    // ADD: capacity-and-program endpoint for locked events (organizer)
+    @PutMapping("/{id}/capacity-and-program")
     @PreAuthorize("hasRole('ROLE_ORGANISATEUR')")
-    public ResponseEntity<?> updateEvent(@PathVariable Long id, @RequestBody EventRequest request, Authentication authentication) {
-        String currentUserEmail = authentication.getName();
+    public ResponseEntity<?> updateCapacityAndProgram(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> body,
+            Authentication authentication) {
 
-        return eventRepository.findById(id)
-                .map(event -> {
-                    if (!event.getOrganisateurEmail().equals(currentUserEmail)) {
-                        return ResponseEntity.status(403)
-                                .body(Map.of("error", "Vous ne pouvez modifier que vos propres événements"));
-                    }
+        String email = authentication.getName();
 
-                    event.setTitle(request.getTitle());
-                    event.setDescription(request.getDescription());
-                    event.setCategory(request.getCategory());
-                    event.setDate(request.getDate());
-                    event.setTime(request.getTime());
-                    event.setLocation(request.getLocation());
-                    event.setImageUrl(request.getImageUrl());
-                    event.setMaxParticipants(request.getMaxParticipants());
-                    event.setProgram(request.getProgram());
-                    Event updatedEvent = eventRepository.save(event);
-
-                    return ResponseEntity.ok(Map.of(
-                            "message", "Event updated successfully",
-                            "event", updatedEvent
-                    ));
-
-                }).orElse(ResponseEntity.notFound().build());
-    }
-
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ORGANISATEUR')")
-    @Transactional  // ← ADD THIS
-    public ResponseEntity<?> deleteEvent(@PathVariable Long id, Authentication authentication) {
-        String currentUserEmail = authentication.getName();
         return eventRepository.findById(id).map(event -> {
-            if (!event.getOrganisateurEmail().equals(currentUserEmail)) {
-                return ResponseEntity.status(403).body(Map.of("error", "Non autorisé"));
+            if (!event.getOrganisateurEmail().equals(email)) {
+                return ResponseEntity.status(403).body("Unauthorized");
             }
-            participantRepository.deleteByEventId(id);
-            eventRepository.deleteById(id);
-            return ResponseEntity.ok(Map.of("message", "Événement supprimé"));
+            if (body.containsKey("maxParticipants") && body.get("maxParticipants") != null) {
+                event.setMaxParticipants((Integer) body.get("maxParticipants"));
+            }
+            if (body.containsKey("program")) {
+                event.setProgram((String) body.get("program"));
+            }
+            eventRepository.save(event);
+            return ResponseEntity.ok(Map.of("message", "Updated successfully"));
         }).orElse(ResponseEntity.notFound().build());
     }
+
 
 
     @GetMapping("/my-events")
@@ -219,7 +199,7 @@ public class EventController {
 
 
     @GetMapping("/confirm")
-    public ResponseEntity<?> confirmPArticipant (@RequestParam String token){
+    public ResponseEntity<?> confirmParticipant (@RequestParam String token){
         return participantRepository.findByConfirmationToken(token)
                 .map(participant -> {
                     participant.setVerified(true);
@@ -236,36 +216,7 @@ public class EventController {
         return ResponseEntity.ok(participants);
     }
 
-    @DeleteMapping("/admin/{id}")
-    @Transactional  // ← ADD THIS
-    public ResponseEntity<?> adminDeleteEvent(@PathVariable Long id) {
-        if (!eventRepository.existsById(id)) return ResponseEntity.notFound().build();
-        participantRepository.deleteByEventId(id); // ← ajoute
-        eventRepository.deleteById(id);
-        return ResponseEntity.ok("Event deleted");
-    }
 
-
-    // EventController.java
-    @PutMapping("/{id}/capacity")
-    public ResponseEntity<?> updateCapacity(@PathVariable Long id,
-                                            @RequestBody Map<String, Integer> body,
-                                            HttpServletRequest request) {
-        String email = jwtUtil.extractEmail(
-                request.getHeader("Authorization").replace("Bearer ", "")
-        );
-
-        return eventRepository.findById(id).map(event -> {
-            // Only the organizer of this event can update capacity
-            if (!event.getOrganisateurEmail().equals(email)) {
-                return ResponseEntity.status(403).body("Unauthorized");
-            }
-            int newCap = body.get("maxParticipants");
-            event.setMaxParticipants(newCap);
-            eventRepository.save(event);
-            return ResponseEntity.ok(Map.of("maxParticipants", newCap));
-        }).orElse(ResponseEntity.notFound().build());
-    }
 
 
 }

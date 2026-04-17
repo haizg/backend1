@@ -318,7 +318,58 @@ public class EmailService {
         }
     }
 
+// Add to EmailService.java
 
+    public void sendContactEmail(String fromName, String fromEmail, String sujet, String message) {
+        try {
+            MimeMessage mail = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mail, true, "UTF-8");
+
+            helper.setTo("invitini.events@gmail.com");
+            helper.setSubject("[Invitini Contact] " + sujet + " — " + fromName);
+            helper.setText(buildEmailContent(fromName, fromEmail, sujet, message), true);
+            helper.setReplyTo(fromEmail);
+
+            mailSender.send(mail);
+            System.out.println("Contact email sent successfully to: invitini.events@gmail.com");
+
+        } catch (Exception e) {
+            System.err.println("Failed to send contact email: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Failed to send contact email", e);
+        }
+    }
+
+    private String buildEmailContent(String fromName, String fromEmail, String sujet, String message) {
+        return "<div style='font-family: Georgia, serif; max-width: 600px; margin: 0 auto; background: #f8f5f0; padding: 40px 20px;'>" +
+                "<div style='text-align: center; margin-bottom: 30px;'>" +
+                "<div style='width: 60px; height: 2px; background:  #A53A6B; margin: 0 auto 20px;'></div>" +
+                "<h1 style='color: #2a6262; font-size: 28px; margin: 0; letter-spacing: 2px;'>Invitini</h1>" +
+                "<div style='width: 60px; height: 2px; background:  #A53A6B; margin: 20px auto 0;'></div>" +
+                "</div>" +
+                "<div style='background: white; border-radius: 12px; padding: 36px; border: 2px solid #e8e4dc;'>" +
+                "<p style='font-size: 13px; color:  #A53A6B; text-transform: uppercase; letter-spacing: 2px; font-weight: 600; margin: 0 0 20px;'>Nouveau message de contact</p>" +
+                "<table style='width: 100%; border-collapse: collapse; margin-bottom: 24px;'>" +
+                "<tr><td style='padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #888; font-size: 13px; width: 120px;'>Nom</td>" +
+                "<td style='padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; color: #1a1a1a; font-weight: 600;'>" + fromName + "</td></tr>" +
+                "<tr><td style='padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #888; font-size: 13px;'>Email</td>" +
+                "<td style='padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; color:  #A53A6B;'>" + fromEmail + "</td></tr>" +
+                "<tr><td style='padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #888; font-size: 13px;'>Sujet</td>" +
+                "<td style='padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; color: #1a1a1a;'>" + sujet + "</td></tr>" +
+                "</table>" +
+                "<p style='font-size: 13px; color: #888; margin: 0 0 12px; text-transform: uppercase; letter-spacing: 1px;'>Message</p>" +
+                "<div style='background: #f8fafa; border-left: 3px solid  #A53A6B; border-radius: 4px; padding: 16px 20px;'>" +
+                "<p style='font-size: 15px; color: #333; line-height: 1.8; margin: 0; white-space: pre-wrap;'>" + message + "</p>" +
+                "</div>" +
+                "<p style='font-size: 13px; color: #aaa; margin: 24px 0 0; text-align: center;'>" +
+                "Répondez directement à cet email pour contacter <strong>" + fromName + "</strong> — " + fromEmail +
+                "</p>" +
+                "</div>" +
+                "<div style='text-align: center; margin-top: 24px; color: #999; font-size: 12px;'>" +
+                "<p>© 2026 Invitini - Plateforme d'événements culturels</p>" +
+                "</div>" +
+                "</div>";
+    }
 
 
 }

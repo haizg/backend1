@@ -34,6 +34,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/**").permitAll()
                         .requestMatchers("/api/user/**").authenticated()
                         .requestMatchers("/api/admin/**").permitAll()
+                        .requestMatchers("/api/contact").permitAll()
                         .anyRequest().permitAll()
                 )
                 .formLogin(form -> form.disable())

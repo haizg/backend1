@@ -6,6 +6,7 @@ import com.example.backend1.repository.OrganisateurRepository;
 import com.example.backend1.repository.UserRepository;
 import com.example.backend1.repository.ParticipantRepository;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -168,7 +169,6 @@ public class AdminController {
             org.setAdminVerified(!org.isAdminVerified());
             organisateurRepository.save(org);
 
-            // Send email only when account becomes verified (not when removing)
             if (org.isAdminVerified()) {
                 emailService.sendOrganisateurVerifiedEmail(org.getEmail());
             }
@@ -193,4 +193,37 @@ public class AdminController {
                 "pendingEvents", pendingEvents
         ));
     }
+
+    @DeleteMapping("/{id}")
+    @Transactional  // ← ADD THIS
+    public ResponseEntity<?> adminDeleteEvent(@PathVariable Long id) {
+        if (!eventRepository.existsById(id)) return ResponseEntity.notFound().build();
+        participantRepository.deleteByEventId(id); // ← ajoute
+        eventRepository.deleteById(id);
+        return ResponseEntity.ok("Event deleted");
+    }
+
+    // FIX: admin update — separate endpoint without ROLE_ORGANISATEUR restriction
+    @PutMapping("/update-event/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<?> adminUpdateEvent(
+            @PathVariable Long id,
+            @RequestBody EventRequest request) {
+
+        return eventRepository.findById(id).map(event -> {
+            event.setTitle(request.getTitle());
+            event.setDescription(request.getDescription());
+            event.setCategory(request.getCategory());
+            event.setDate(request.getDate());
+            event.setTime(request.getTime());
+            event.setLocation(request.getLocation());
+            event.setImageUrl(request.getImageUrl());
+            event.setMaxParticipants(request.getMaxParticipants());
+            event.setProgram(request.getProgram());
+            eventRepository.save(event);
+            return ResponseEntity.ok(Map.of("message", "Event updated by admin"));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+
 }
