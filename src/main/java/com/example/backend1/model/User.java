@@ -19,6 +19,8 @@ public class User {
     private Role role = Role.ROLE_USER;
     @Column(nullable = false)
     private boolean verified = false;
+    @Column(nullable = false)
+    private boolean active = true;
 
     public User() {}
     public User(String nom, String prenom, String email, String password, Role role) {
@@ -79,4 +81,8 @@ public class User {
     public void setVerified(boolean verified) {
         this.verified = verified;
     }
+
+    public boolean isActive() { return active; }
+    public void setActive(boolean active) { this.active = active; }
+
 }

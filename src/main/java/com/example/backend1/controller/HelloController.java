@@ -44,6 +44,10 @@ public class HelloController {
                 return ResponseEntity.status(403)
                         .body(Map.of("error", "ACCOUNT_NOT_VERIFIED"));
             }
+            if (e.getMessage().equals("ACCOUNT_DEACTIVATED")) {
+                return ResponseEntity.status(403)
+                        .body(Map.of("error", "ACCOUNT_DEACTIVATED"));
+            }
 
             return ResponseEntity.status(500)
                     .body(Map.of("error", "Erreur serveur"));

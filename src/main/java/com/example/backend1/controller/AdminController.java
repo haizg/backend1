@@ -225,5 +225,32 @@ public class AdminController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
+// Add to AdminController.java
 
+    @GetMapping("/organisateurs/deactivation-requests")
+    public ResponseEntity<?> getDeactivationRequests() {
+        List<Organisateur> pending = organisateurRepository
+                .findByDeactivationRequestedTrue();
+        return ResponseEntity.ok(pending);
+    }
+
+    @PutMapping("/organisateurs/{id}/deactivate/approve")
+    public ResponseEntity<?> approveDeactivation(@PathVariable Long id) {
+        return organisateurRepository.findById(id).map(org -> {
+            org.setActive(false);
+            org.setDeactivationRequested(false);
+            organisateurRepository.save(org);
+            emailService.sendDeactivationConfirmedEmail(org.getEmail(), "fr");
+            return ResponseEntity.ok(Map.of("message", "Compte désactivé."));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/organisateurs/{id}/deactivate/reject")
+    public ResponseEntity<?> rejectDeactivation(@PathVariable Long id) {
+        return organisateurRepository.findById(id).map(org -> {
+            org.setDeactivationRequested(false);
+            organisateurRepository.save(org);
+            return ResponseEntity.ok(Map.of("message", "Demande refusée."));
+        }).orElse(ResponseEntity.notFound().build());
+    }
 }

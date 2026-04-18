@@ -28,6 +28,11 @@ public class Organisateur {
     @Column(nullable = false, name = "admin_verified")
     private boolean adminVerified = false;
 
+    @Column(nullable = false)
+    private boolean active = true;
+
+    @Column(nullable = false)
+    private boolean deactivationRequested = false;
 
     public Organisateur() {}
     public Organisateur(String nom, String prenom,String adresse,String nomOrganisation, String email, Role role, Boolean adminVerified){
@@ -106,4 +111,9 @@ public class Organisateur {
         this.adminVerified = adminVerified;
     }
 
+    public boolean isActive() { return active; }
+    public void setActive(boolean active) { this.active = active; }
+
+    public boolean isDeactivationRequested() { return deactivationRequested; }
+    public void setDeactivationRequested(boolean v) { this.deactivationRequested = v; }
 }

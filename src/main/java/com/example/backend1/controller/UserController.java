@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -26,16 +27,18 @@ public class UserController {
     private final PasswordEncoder passwordEncoder;
     private final ParticipantRepository participantRepository;
     private final JwtUtil jwtUtil;
+    private final EmailService emailService;
 
     public UserController(UserRepository userRepository, OrganisateurRepository organisateurRepository,
                           PasswordEncoder passwordEncoder,ParticipantRepository participantRepository,
-                          JwtUtil jwtUtil) {
+                          JwtUtil jwtUtil,
+                          EmailService emailService) {
         this.userRepository = userRepository;
         this.organisateurRepository = organisateurRepository;
         this.passwordEncoder = passwordEncoder;
         this.participantRepository=participantRepository;
         this.jwtUtil = jwtUtil;
-
+        this.emailService = emailService;
     }
 
     @PutMapping("/update-profile")
@@ -117,6 +120,51 @@ public class UserController {
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(eventIds);
+    }
+
+    // Add to UserController.java
+
+    @PutMapping("/deactivate")
+    public ResponseEntity<?> deactivateUser(HttpServletRequest request) {
+        String email = jwtUtil.extractEmail(
+                request.getHeader("Authorization").replace("Bearer ", "")
+        );
+
+        // Check if organizer
+        Optional<Organisateur> orgOpt = organisateurRepository.findByEmail(email);
+        if (orgOpt.isPresent()) {
+            Organisateur org = orgOpt.get();
+            org.setDeactivationRequested(true);
+            organisateurRepository.save(org);
+
+            // Notify admin
+            String adminEmail = "invitini.events@gmail.com";
+            emailService.sendDeactivationRequestEmail(
+                    adminEmail,
+                    org.getPrenom() + " " + org.getNom(),
+                    org.getEmail(),
+                    "fr"
+            );
+            return ResponseEntity.ok(Map.of(
+                    "message", "Demande envoyée à l'admin.",
+                    "status", "PENDING"
+            ));
+        }
+
+        // Regular user — deactivate immediately
+        Optional<User> userOpt = userRepository.findUserByEmail(email);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            user.setActive(false);
+            userRepository.save(user);
+            emailService.sendDeactivationConfirmedEmail(email, "fr");
+            return ResponseEntity.ok(Map.of(
+                    "message", "Compte désactivé.",
+                    "status", "DEACTIVATED"
+            ));
+        }
+
+        return ResponseEntity.notFound().build();
     }
 
 }

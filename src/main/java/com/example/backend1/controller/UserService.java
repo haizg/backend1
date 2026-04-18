@@ -84,6 +84,9 @@ public class UserService implements UserDetailsService {
                 if (!user.isVerified()) {
                     throw new RuntimeException("ACCOUNT_NOT_VERIFIED");
                 }
+                if (!user.isActive()) {
+                    throw new RuntimeException("ACCOUNT_DEACTIVATED");
+                }
                 return jwtUtil.generateToken(user.getEmail(), user.getRole(),  user.getNom(), user.getPrenom(),user.isVerified(),false);
             }
             return null;
@@ -94,6 +97,9 @@ public class UserService implements UserDetailsService {
             if (passwordEncoder.matches(password, org.getPassword())){
                 if (!org.isVerified()) {
                     throw new RuntimeException("ACCOUNT_NOT_VERIFIED");
+                }
+                if (!org.isActive()) {
+                    throw new RuntimeException("ACCOUNT_DEACTIVATED");
                 }
                 return jwtUtil.generateToken(org.getEmail(),org.getRole(), org.getNom(), org.getPrenom(),org.isVerified(),org.isAdminVerified());
             }

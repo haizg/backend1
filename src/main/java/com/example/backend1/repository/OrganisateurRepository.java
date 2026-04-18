@@ -8,8 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface OrganisateurRepository extends JpaRepository <Organisateur,Long> {
-
-
+    List<Organisateur> findByDeactivationRequestedTrue();
     Optional<Organisateur> findByEmail(String email);
 
 
