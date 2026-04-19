@@ -10,6 +10,7 @@ import com.example.backend1.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -125,46 +126,53 @@ public class UserController {
     // Add to UserController.java
 
     @PutMapping("/deactivate")
+    @Transactional
     public ResponseEntity<?> deactivateUser(HttpServletRequest request) {
         String email = jwtUtil.extractEmail(
                 request.getHeader("Authorization").replace("Bearer ", "")
         );
 
-        // Check if organizer
+        // Organizer → request admin approval
         Optional<Organisateur> orgOpt = organisateurRepository.findByEmail(email);
         if (orgOpt.isPresent()) {
             Organisateur org = orgOpt.get();
+            if (org.isDeactivationRequested()) {
+                return ResponseEntity.ok(Map.of("status", "ALREADY_PENDING"));
+            }
             org.setDeactivationRequested(true);
             organisateurRepository.save(org);
 
-            // Notify admin
-            String adminEmail = "invitini.events@gmail.com";
             emailService.sendDeactivationRequestEmail(
-                    adminEmail,
+                    "invitini.events@gmail.com",
                     org.getPrenom() + " " + org.getNom(),
-                    org.getEmail(),
-                    "fr"
+                    org.getEmail(), "fr"
             );
-            return ResponseEntity.ok(Map.of(
-                    "message", "Demande envoyée à l'admin.",
-                    "status", "PENDING"
-            ));
+            return ResponseEntity.ok(Map.of("status", "PENDING"));
         }
 
-        // Regular user — deactivate immediately
+        // Regular user → deactivate immediately (keep in DB)
         Optional<User> userOpt = userRepository.findUserByEmail(email);
         if (userOpt.isPresent()) {
             User user = userOpt.get();
             user.setActive(false);
             userRepository.save(user);
+            participantRepository.deleteByEmail(email); // clean up participations
             emailService.sendDeactivationConfirmedEmail(email, "fr");
-            return ResponseEntity.ok(Map.of(
-                    "message", "Compte désactivé.",
-                    "status", "DEACTIVATED"
-            ));
+            return ResponseEntity.ok(Map.of("status", "DEACTIVATED"));
         }
 
         return ResponseEntity.notFound().build();
     }
 
+    @GetMapping("/deactivation-status")
+    public ResponseEntity<?> getDeactivationStatus(HttpServletRequest request) {
+        String email = jwtUtil.extractEmail(
+                request.getHeader("Authorization").replace("Bearer ", "")
+        );
+        return organisateurRepository.findByEmail(email)
+                .map(org -> ResponseEntity.ok(Map.of(
+                        "deactivationRequested", org.isDeactivationRequested()
+                )))
+                .orElse(ResponseEntity.ok(Map.of("deactivationRequested", false)));
+    }
 }

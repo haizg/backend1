@@ -346,15 +346,39 @@ public class EmailService {
                 "letter-spacing:2px;margin:0 0 20px;font-weight:600;'>" +
                 (fr ? "Compte désactivé" : "Account deactivated") + "</p>" +
                 "<h2 style='color:#1a1a1a;font-size:24px;margin:0 0 20px;'>" +
-                (fr ? "Votre compte a été désactivé" : "Your account has been deactivated") + "</h2>" +
+                (fr ? "Votre compte est désactivé" : "Your account is deactivated") + "</h2>" +
                 divider() +
                 "<p style='color:#666;font-size:15px;line-height:1.6;margin:20px 0;'>" +
-                (fr ? "Votre demande de désactivation a été traitée. Votre compte est maintenant inactif."
-                        : "Your deactivation request has been processed. Your account is now inactive.") + "</p>" +
+                (fr ? "Votre compte a été désactivé avec succès. Vous ne pouvez plus vous connecter à Invitini."
+                        : "Your account has been successfully deactivated. You can no longer sign in to Invitini.") + "</p>" +
                 "<p style='color:#666;font-size:14px;line-height:1.6;margin:20px 0;'>" +
-                (fr ? "Si vous souhaitez réactiver votre compte, contactez-nous à support@invitini.tn."
-                        : "To reactivate your account, contact us at support@invitini.tn.") + "</p>" +
+                (fr ? "Si vous souhaitez réactiver votre compte à l'avenir, contactez-nous à <strong>support@invitini.tn</strong> en précisant votre adresse email."
+                        : "If you wish to reactivate your account in the future, contact us at <strong>support@invitini.tn</strong> with your email address.") + "</p>" +
+                teamSignature(lang) + cardClose() + footer();
+
+        send(toEmail, subject, body);
+    }
+
+    public void sendDeactivationRejectedEmail(String toEmail, String lang) {
+        boolean fr = isFr(lang);
+        String subject = fr
+                ? "Demande de désactivation refusée — Invitini"
+                : "Account deactivation request rejected — Invitini";
+
+        String body = header() + cardOpen() +
+                "<p style='font-size:14px;color:" + PRIMARY + ";text-transform:uppercase;" +
+                "letter-spacing:2px;margin:0 0 20px;font-weight:600;'>" +
+                (fr ? "Demande refusée" : "Request rejected") + "</p>" +
+                "<h2 style='color:#1a1a1a;font-size:22px;margin:0 0 16px;'>" +
+                (fr ? "Votre demande a été refusée" : "Your request was rejected") + "</h2>" +
                 divider() +
+                "<p style='color:#666;font-size:15px;line-height:1.6;margin:20px 0;'>" +
+                (fr ? "Votre demande de désactivation a été examinée et refusée par notre équipe. Votre compte reste actif."
+                        : "Your deactivation request was reviewed and rejected. Your account remains active.") + "</p>" +
+                "<p style='color:#666;font-size:14px;line-height:1.6;margin:20px 0;'>" +
+                (fr ? "Si vous avez des questions, contactez-nous à support@invitini.tn."
+                        : "If you have questions, reach us at support@invitini.tn.") + "</p>" +
+                button("http://localhost:4200/home", fr ? "Retour à la plateforme" : "Back to platform") +
                 teamSignature(lang) + cardClose() + footer();
 
         send(toEmail, subject, body);

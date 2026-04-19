@@ -81,11 +81,11 @@ public class UserService implements UserDetailsService {
         if (optionalUser.isPresent()){
             User user = optionalUser.get();
             if (passwordEncoder.matches(password,user.getPassword())){
-                if (!user.isVerified()) {
-                    throw new RuntimeException("ACCOUNT_NOT_VERIFIED");
-                }
                 if (!user.isActive()) {
                     throw new RuntimeException("ACCOUNT_DEACTIVATED");
+                }
+                if (!user.isVerified()) {
+                    throw new RuntimeException("ACCOUNT_NOT_VERIFIED");
                 }
                 return jwtUtil.generateToken(user.getEmail(), user.getRole(),  user.getNom(), user.getPrenom(),user.isVerified(),false);
             }
@@ -95,11 +95,11 @@ public class UserService implements UserDetailsService {
         if (optionalOrg.isPresent()){
             Organisateur org=optionalOrg.get();
             if (passwordEncoder.matches(password, org.getPassword())){
-                if (!org.isVerified()) {
-                    throw new RuntimeException("ACCOUNT_NOT_VERIFIED");
-                }
                 if (!org.isActive()) {
                     throw new RuntimeException("ACCOUNT_DEACTIVATED");
+                }
+                if (!org.isVerified()) {
+                    throw new RuntimeException("ACCOUNT_NOT_VERIFIED");
                 }
                 return jwtUtil.generateToken(org.getEmail(),org.getRole(), org.getNom(), org.getPrenom(),org.isVerified(),org.isAdminVerified());
             }

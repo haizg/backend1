@@ -234,13 +234,22 @@ public class AdminController {
         return ResponseEntity.ok(pending);
     }
 
+    // AdminController.java — replace approveDeactivation
     @PutMapping("/organisateurs/{id}/deactivate/approve")
+    @Transactional
     public ResponseEntity<?> approveDeactivation(@PathVariable Long id) {
         return organisateurRepository.findById(id).map(org -> {
+            // Mark account as inactive
             org.setActive(false);
             org.setDeactivationRequested(false);
             organisateurRepository.save(org);
+
+            // Delete their participations in events (as a participant)
+            participantRepository.deleteByEmail(org.getEmail());
+
+            // Notify them
             emailService.sendDeactivationConfirmedEmail(org.getEmail(), "fr");
+
             return ResponseEntity.ok(Map.of("message", "Compte désactivé."));
         }).orElse(ResponseEntity.notFound().build());
     }
@@ -250,6 +259,7 @@ public class AdminController {
         return organisateurRepository.findById(id).map(org -> {
             org.setDeactivationRequested(false);
             organisateurRepository.save(org);
+            emailService.sendDeactivationRejectedEmail(org.getEmail(), "fr"); // ← ADD
             return ResponseEntity.ok(Map.of("message", "Demande refusée."));
         }).orElse(ResponseEntity.notFound().build());
     }
