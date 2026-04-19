@@ -60,26 +60,28 @@ public class AdminController {
         return ResponseEntity.ok(organisateurRepository.findAll());
     }
 
+    // AdminController.java — replace deleteOrganisateur
     @DeleteMapping("/organisateurs/{id}")
     @Transactional
     public ResponseEntity<?> deleteOrganisateur(@PathVariable Long id) {
         return organisateurRepository.findById(id).map(org -> {
-            // Get all events of this organizer
-            List<Event> orgEvents = eventRepository.findByOrganisateurEmail(org.getEmail());
+            // 1. Delete participations of the organizer as a participant
+            participantRepository.deleteByEmail(org.getEmail());
 
-            // Delete all participations for each event
+            // 2. Delete participants of each event this organizer created
+            List<Event> orgEvents = eventRepository.findByOrganisateurEmail(org.getEmail());
             for (Event event : orgEvents) {
                 participantRepository.deleteByEventId(event.getId());
             }
 
-            // Delete all events
+            // 3. Delete the events
             eventRepository.deleteAll(orgEvents);
 
-            // Delete the organizer
+            // 4. Delete the organizer
             organisateurRepository.deleteById(id);
 
             return ResponseEntity.ok(Map.of(
-                    "message", "Organisateur et ses données supprimés",
+                    "message", "Organisateur et toutes ses données supprimés",
                     "eventsDeleted", orgEvents.size()
             ));
         }).orElse(ResponseEntity.notFound().build());
