@@ -59,7 +59,7 @@ public class HelloController {
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody SignUpRequest request) {
         try {
-            userService.signUp(request); // service only does the logic
+            userService.signUp(request);
             return ResponseEntity.ok("Utilisateur créé avec succès. Vérifiez votre email.");
         } catch (Exception e) {
             return ResponseEntity

@@ -103,9 +103,6 @@ public class UserController {
         return ResponseEntity.notFound().build();
     }
 
-
-    // EventController.java or a new UserController
-
     @GetMapping("/my-participations")
     public ResponseEntity<?> getMyParticipations(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
@@ -113,7 +110,7 @@ public class UserController {
             return ResponseEntity.status(401).build();
         }
         String token = authHeader.replace("Bearer ", "");
-        String email = jwtUtil.extractEmail(token); // use your actual method name
+        String email = jwtUtil.extractEmail(token);
 
         List<Participant> participations = participantRepository.findByEmail(email);
         List<Long> eventIds = participations.stream()
@@ -123,7 +120,6 @@ public class UserController {
         return ResponseEntity.ok(eventIds);
     }
 
-    // Add to UserController.java
 
     @PutMapping("/deactivate")
     @Transactional

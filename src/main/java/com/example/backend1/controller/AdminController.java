@@ -197,15 +197,14 @@ public class AdminController {
     }
 
     @DeleteMapping("/{id}")
-    @Transactional  // ← ADD THIS
+    @Transactional
     public ResponseEntity<?> adminDeleteEvent(@PathVariable Long id) {
         if (!eventRepository.existsById(id)) return ResponseEntity.notFound().build();
-        participantRepository.deleteByEventId(id); // ← ajoute
+        participantRepository.deleteByEventId(id);
         eventRepository.deleteById(id);
         return ResponseEntity.ok("Event deleted");
     }
 
-    // FIX: admin update — separate endpoint without ROLE_ORGANISATEUR restriction
     @PutMapping("/update-event/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> adminUpdateEvent(
