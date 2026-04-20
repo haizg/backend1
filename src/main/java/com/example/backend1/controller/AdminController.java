@@ -47,9 +47,7 @@ public class AdminController {
     @Transactional
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         return userRepository.findById(String.valueOf(id)).map(user -> {
-            // Delete all participations of this user
             participantRepository.deleteByEmail(user.getEmail());
-            // Delete the user
             userRepository.deleteById(String.valueOf(id));
             return ResponseEntity.ok("Utilisateur et ses participations supprimés");
         }).orElse(ResponseEntity.notFound().build());
@@ -60,26 +58,17 @@ public class AdminController {
         return ResponseEntity.ok(organisateurRepository.findAll());
     }
 
-    // AdminController.java — replace deleteOrganisateur
     @DeleteMapping("/organisateurs/{id}")
     @Transactional
     public ResponseEntity<?> deleteOrganisateur(@PathVariable Long id) {
         return organisateurRepository.findById(id).map(org -> {
-            // 1. Delete participations of the organizer as a participant
             participantRepository.deleteByEmail(org.getEmail());
-
-            // 2. Delete participants of each event this organizer created
             List<Event> orgEvents = eventRepository.findByOrganisateurEmail(org.getEmail());
             for (Event event : orgEvents) {
                 participantRepository.deleteByEventId(event.getId());
             }
-
-            // 3. Delete the events
             eventRepository.deleteAll(orgEvents);
-
-            // 4. Delete the organizer
             organisateurRepository.deleteById(id);
-
             return ResponseEntity.ok(Map.of(
                     "message", "Organisateur et toutes ses données supprimés",
                     "eventsDeleted", orgEvents.size()
@@ -154,8 +143,6 @@ public class AdminController {
         return eventRepository.findById(id).map(event -> {
             event.setApproved(true);
             eventRepository.save(event);
-
-            // Notify organiser their event is now live
             emailService.sendEventApprovedEmail(
                     event.getOrganisateurEmail(),
                     event.getTitle()
@@ -226,7 +213,6 @@ public class AdminController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
-// Add to AdminController.java
 
     @GetMapping("/organisateurs/deactivation-requests")
     public ResponseEntity<?> getDeactivationRequests() {
@@ -235,20 +221,14 @@ public class AdminController {
         return ResponseEntity.ok(pending);
     }
 
-    // AdminController.java — replace approveDeactivation
     @PutMapping("/organisateurs/{id}/deactivate/approve")
     @Transactional
     public ResponseEntity<?> approveDeactivation(@PathVariable Long id) {
         return organisateurRepository.findById(id).map(org -> {
-            // Mark account as inactive
             org.setActive(false);
             org.setDeactivationRequested(false);
             organisateurRepository.save(org);
-
-            // Delete their participations in events (as a participant)
             participantRepository.deleteByEmail(org.getEmail());
-
-            // Notify them
             emailService.sendDeactivationConfirmedEmail(org.getEmail(), "fr");
 
             return ResponseEntity.ok(Map.of("message", "Compte désactivé."));
@@ -260,7 +240,7 @@ public class AdminController {
         return organisateurRepository.findById(id).map(org -> {
             org.setDeactivationRequested(false);
             organisateurRepository.save(org);
-            emailService.sendDeactivationRejectedEmail(org.getEmail(), "fr"); // ← ADD
+            emailService.sendDeactivationRejectedEmail(org.getEmail(), "fr");
             return ResponseEntity.ok(Map.of("message", "Demande refusée."));
         }).orElse(ResponseEntity.notFound().build());
     }

@@ -85,10 +85,6 @@ public class EventController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-
-
-
-
     @PostMapping("/join")
     public ResponseEntity<?> joinEvent(@RequestBody Participant participant) {
 
@@ -107,12 +103,6 @@ public class EventController {
 
         return ResponseEntity.ok("Successfully registered! Check your email for verification.");
     }
-
-
-
-
-
-
 
     @PostMapping
     @PreAuthorize("hasRole('ROLE_ORGANISATEUR')")
@@ -155,7 +145,6 @@ public class EventController {
         }
     }
 
-    // ADD: capacity-and-program endpoint for locked events (organizer)
     @PutMapping("/{id}/capacity-and-program")
     @PreAuthorize("hasRole('ROLE_ORGANISATEUR')")
     public ResponseEntity<?> updateCapacityAndProgram(

@@ -25,11 +25,6 @@ public class ContactController {
             String sujet = body.getOrDefault("sujet", "");
             String message = body.getOrDefault("message", "");
 
-            // Log received request
-            System.out.println("Received contact request from: " + email);
-            System.out.println("Subject: " + sujet);
-
-            // Basic validation
             if (email.isBlank() || message.isBlank() || prenom.isBlank()) {
                 response.put("error", "Champs requis manquants.");
                 return ResponseEntity.badRequest().body(response);
