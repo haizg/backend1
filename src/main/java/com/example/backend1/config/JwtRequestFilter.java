@@ -26,37 +26,28 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+                                    FilterChain chain) throws ServletException, IOException {
+        String header = request.getHeader("Authorization");
 
-        String authHeader = request.getHeader("Authorization");
-
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
-
+        if (header != null && header.startsWith("Bearer ")) {
+            String token = header.substring(7);
             try {
                 if (jwtUtil.validateToken(token)) {
                     String email = jwtUtil.extractEmail(token);
                     Role role = jwtUtil.extractRole(token);
 
-                    SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + role.name());
-
-                    UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(
-                                    email,
-                                    null,
-                                    Collections.singletonList(authority)
-                            );
-
-                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    var auth = new UsernamePasswordAuthenticationToken(
+                            email, null,
+                            Collections.singletonList(new SimpleGrantedAuthority(role.name())));
+                    auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(auth);
                 }
             } catch (Exception e) {
-                logger.error("JWT validation failed: " + e.getMessage());
+                logger.warn("JWT validation failed: " + e.getMessage());
             }
         }
 
-        filterChain.doFilter(request, response);
+        chain.doFilter(request, response);
     }
 }

@@ -1,11 +1,7 @@
 package com.example.backend1.controller;
 
-import com.example.backend1.model.Organisateur;
-import com.example.backend1.model.Participant;
-import com.example.backend1.model.User;
-import com.example.backend1.repository.OrganisateurRepository;
-import com.example.backend1.repository.ParticipantRepository;
-import com.example.backend1.repository.UserRepository;
+import com.example.backend1.model.*;
+import com.example.backend1.repository.*;
 import com.example.backend1.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
@@ -13,7 +9,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -31,72 +26,75 @@ public class UserController {
     private final EmailService emailService;
 
     public UserController(UserRepository userRepository, OrganisateurRepository organisateurRepository,
-                          PasswordEncoder passwordEncoder,ParticipantRepository participantRepository,
-                          JwtUtil jwtUtil,
-                          EmailService emailService) {
+                          PasswordEncoder passwordEncoder, ParticipantRepository participantRepository,
+                          JwtUtil jwtUtil, EmailService emailService) {
         this.userRepository = userRepository;
         this.organisateurRepository = organisateurRepository;
         this.passwordEncoder = passwordEncoder;
-        this.participantRepository=participantRepository;
+        this.participantRepository = participantRepository;
         this.jwtUtil = jwtUtil;
         this.emailService = emailService;
     }
 
     @PutMapping("/update-profile")
-    public ResponseEntity<?> updateProfile(@RequestBody Map<String,String> body){
+    public ResponseEntity<?> updateProfile(@RequestBody Map<String, String> body) {
         String email = body.get("email");
-        String newNom = body.get("nom");
-        String newPrenom = body.get("prenom");
-        String newEmail = body.get("newEmail");
-        String nomOrganisation = body.get("nomOrganisation");
 
-
-        User user=userRepository.findUserByEmail(email).orElse(null);
-        if (user != null){
-            user.setNom(newNom);
-            user.setPrenom(newPrenom);
-            if (newEmail!=null && !newEmail.isEmpty()) user.setEmail(newEmail);
-            userRepository.save(user);
-            return ResponseEntity.ok(Map.of("nom",user.getNom(),"prenom",user.getPrenom(), "email", user.getEmail(), "role", user.getRole().toString()));
-        }
-
-        Organisateur org = organisateurRepository.findByEmail(email).orElse(null);
-        if (org != null) {
-            org.setNom(newNom);
-            org.setPrenom(newPrenom);
-            if (newEmail != null && !newEmail.isEmpty()) org.setEmail(newEmail);
-            if (nomOrganisation != null) org.setNomOrganisation(nomOrganisation);
+        Optional<Organisateur> orgOpt = organisateurRepository.findByEmail(email);
+        if (orgOpt.isPresent()) {
+            Organisateur org = orgOpt.get();
+            org.setNom(body.get("nom"));
+            org.setPrenom(body.get("prenom"));
+            if (body.get("newEmail") != null && !body.get("newEmail").isEmpty())
+                org.setEmail(body.get("newEmail"));
+            if (body.get("nomOrganisation") != null)
+                org.setNomOrganisation(body.get("nomOrganisation"));
             organisateurRepository.save(org);
-            return ResponseEntity.ok(Map.of("nom", org.getNom(), "prenom", org.getPrenom(), "email", org.getEmail(), "role", org.getRole().toString(), "nomOrganisation", org.getNomOrganisation() != null ? org.getNomOrganisation() : ""));
+            return ResponseEntity.ok(Map.of(
+                    "nom", org.getNom(), "prenom", org.getPrenom(),
+                    "email", org.getEmail(), "role", org.getRole().toString(),
+                    "nomOrganisation", org.getNomOrganisation() != null ? org.getNomOrganisation() : ""));
         }
+
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            user.setNom(body.get("nom"));
+            user.setPrenom(body.get("prenom"));
+            if (body.get("newEmail") != null && !body.get("newEmail").isEmpty())
+                user.setEmail(body.get("newEmail"));
+            userRepository.save(user);
+            return ResponseEntity.ok(Map.of(
+                    "nom", user.getNom(), "prenom", user.getPrenom(),
+                    "email", user.getEmail(), "role", user.getRole().toString()));
+        }
+
         return ResponseEntity.notFound().build();
     }
 
-
     @PutMapping("/change-password")
-    public ResponseEntity<?> changePassword(@RequestBody Map<String, String> body){
+    public ResponseEntity<?> changePassword(@RequestBody Map<String, String> body) {
         String email = body.get("email");
         String oldPassword = body.get("oldPassword");
         String newPassword = body.get("newPassword");
 
-
-        User user = userRepository.findUserByEmail(email).orElse(null);
-        if (user != null) {
-            if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+        Optional<Organisateur> orgOpt = organisateurRepository.findByEmail(email);
+        if (orgOpt.isPresent()) {
+            Organisateur org = orgOpt.get();
+            if (!passwordEncoder.matches(oldPassword, org.getPassword()))
                 return ResponseEntity.badRequest().body("Ancien mot de passe incorrect");
-            }
-            user.setPassword(passwordEncoder.encode(newPassword));
-            userRepository.save(user);
+            org.setPassword(passwordEncoder.encode(newPassword));
+            organisateurRepository.save(org);
             return ResponseEntity.ok("Mot de passe modifié avec succès");
         }
 
-        Organisateur org = organisateurRepository.findByEmail(email).orElse(null);
-        if (org != null) {
-            if (!passwordEncoder.matches(oldPassword, org.getPassword())) {
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            if (!passwordEncoder.matches(oldPassword, user.getPassword()))
                 return ResponseEntity.badRequest().body("Ancien mot de passe incorrect");
-            }
-            org.setPassword(passwordEncoder.encode(newPassword));
-            organisateurRepository.save(org);
+            user.setPassword(passwordEncoder.encode(newPassword));
+            userRepository.save(user);
             return ResponseEntity.ok("Mot de passe modifié avec succès");
         }
 
@@ -105,54 +103,38 @@ public class UserController {
 
     @GetMapping("/my-participations")
     public ResponseEntity<?> getMyParticipations(HttpServletRequest request) {
-        String authHeader = request.getHeader("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return ResponseEntity.status(401).build();
-        }
-        String token = authHeader.replace("Bearer ", "");
+        String token = extractToken(request);
+        if (token == null) return ResponseEntity.status(401).build();
         String email = jwtUtil.extractEmail(token);
-
-        List<Participant> participations = participantRepository.findByEmail(email);
-        List<Long> eventIds = participations.stream()
-                .map(Participant::getEventId)
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(eventIds);
+        var ids = participantRepository.findByEmail(email).stream()
+                .map(Participant::getEventId).collect(Collectors.toList());
+        return ResponseEntity.ok(ids);
     }
-
 
     @PutMapping("/deactivate")
     @Transactional
     public ResponseEntity<?> deactivateUser(HttpServletRequest request) {
-        String email = jwtUtil.extractEmail(
-                request.getHeader("Authorization").replace("Bearer ", "")
-        );
+        String email = jwtUtil.extractEmail(extractToken(request));
 
-        // Organizer → request admin approval
         Optional<Organisateur> orgOpt = organisateurRepository.findByEmail(email);
         if (orgOpt.isPresent()) {
             Organisateur org = orgOpt.get();
-            if (org.isDeactivationRequested()) {
+            if (org.isDeactivationRequested())
                 return ResponseEntity.ok(Map.of("status", "ALREADY_PENDING"));
-            }
             org.setDeactivationRequested(true);
             organisateurRepository.save(org);
-
             emailService.sendDeactivationRequestEmail(
                     "invitini.events@gmail.com",
-                    org.getPrenom() + " " + org.getNom(),
-                    org.getEmail(), "fr"
-            );
+                    org.getPrenom() + " " + org.getNom(), org.getEmail(), "fr");
             return ResponseEntity.ok(Map.of("status", "PENDING"));
         }
 
-        // Regular user → deactivate immediately (keep in DB)
-        Optional<User> userOpt = userRepository.findUserByEmail(email);
+        Optional<User> userOpt = userRepository.findByEmail(email);
         if (userOpt.isPresent()) {
             User user = userOpt.get();
             user.setActive(false);
             userRepository.save(user);
-            participantRepository.deleteByEmail(email); // clean up participations
+            participantRepository.deleteByEmail(email);
             emailService.sendDeactivationConfirmedEmail(email, "fr");
             return ResponseEntity.ok(Map.of("status", "DEACTIVATED"));
         }
@@ -162,13 +144,14 @@ public class UserController {
 
     @GetMapping("/deactivation-status")
     public ResponseEntity<?> getDeactivationStatus(HttpServletRequest request) {
-        String email = jwtUtil.extractEmail(
-                request.getHeader("Authorization").replace("Bearer ", "")
-        );
+        String email = jwtUtil.extractEmail(extractToken(request));
         return organisateurRepository.findByEmail(email)
-                .map(org -> ResponseEntity.ok(Map.of(
-                        "deactivationRequested", org.isDeactivationRequested()
-                )))
+                .map(org -> ResponseEntity.ok(Map.of("deactivationRequested", org.isDeactivationRequested())))
                 .orElse(ResponseEntity.ok(Map.of("deactivationRequested", false)));
+    }
+
+    private String extractToken(HttpServletRequest request) {
+        String header = request.getHeader("Authorization");
+        return (header != null && header.startsWith("Bearer ")) ? header.substring(7) : null;
     }
 }

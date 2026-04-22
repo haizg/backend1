@@ -1,22 +1,23 @@
 package com.example.backend1.repository;
 
+import com.example.backend1.model.Event;
 import com.example.backend1.model.Participant;
+import com.example.backend1.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import java.util.Optional;
-
-import java.nio.channels.FileChannel;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ParticipantRepository extends JpaRepository<Participant, Long> {
     List<Participant> findByEmail(String email);
-
+    List<Participant> findByUser(User user);
     Optional<Participant> findByConfirmationToken(String token);
-    int countByEventIdAndVerifiedTrue(Long eventId);
 
-    List<Participant> findByEventId(Long id);
-    void deleteByEventId(Long eventId);
+    int countByEventAndVerifiedTrue(Event event);
+
+    List<Participant> findByEvent(Event event);
+    void deleteByEvent(Event event);
     void deleteByEmail(String email);
-    long countByVerified(boolean b);
+    long countByVerified(boolean verified);
 }
