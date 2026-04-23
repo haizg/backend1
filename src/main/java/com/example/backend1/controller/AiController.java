@@ -1,5 +1,7 @@
 package com.example.backend1.controller;
 
+import com.example.backend1.service.AiPosterService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -67,6 +69,30 @@ public class AiController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body(Map.of("error", "Failed: " + e.getMessage()));
+        }
+    }
+    @Autowired
+    private AiPosterService aiPosterService;
+
+    @PostMapping("/generate-poster")
+    public ResponseEntity<Map<String, String>> generatePoster(@RequestBody Map<String, String> body) {
+        String title       = body.getOrDefault("title", "").trim();
+        String description = body.getOrDefault("description", "").trim();
+        String category    = body.getOrDefault("category", "");
+        String style       = body.getOrDefault("style", "");
+
+        if (title.isEmpty() || description.isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "title and description are required"));
+        }
+
+        try {
+            String posterUrl = aiPosterService.generateAndUploadPoster(title, description, category, style);
+            return ResponseEntity.ok(Map.of("url", posterUrl));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500)
+                    .body(Map.of("error", "Poster generation failed: " + e.getMessage()));
         }
     }
 }
