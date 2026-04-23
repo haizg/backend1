@@ -62,7 +62,6 @@ public class EventController {
         Event event = eventRepository.findById(eventId).orElse(null);
         if (event == null) return ResponseEntity.notFound().build();
 
-        // Check capacity
         if (event.getMaxParticipants() != null) {
             int count = participantRepository.countByEventAndVerifiedTrue(event);
             if (count >= event.getMaxParticipants())
@@ -102,7 +101,7 @@ public class EventController {
         event.setImageUrl(request.getImageUrl());
         event.setMaxParticipants(request.getMaxParticipants());
         event.setProgram(request.getProgram());
-        event.setOrganisateur(org);   // sets both FK and email
+        event.setOrganisateur(org);
         event.setApproved(false);
 
         return ResponseEntity.ok(Map.of("message", "Event created", "event", eventRepository.save(event)));
@@ -128,7 +127,6 @@ public class EventController {
 
     @GetMapping("/my-events")
     public List<Map<String, Object>> getMyEvents(@RequestParam String email) {
-        // Events the user participated in (via participant email)
         return participantRepository.findByEmail(email).stream()
                 .map(Participant::getEvent)
                 .filter(Objects::nonNull)
