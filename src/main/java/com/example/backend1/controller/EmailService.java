@@ -16,7 +16,6 @@ public class EmailService {
     private static final String SECONDARY = "#A53A6B";
     private static final String TEAL      = "#2a6262";
 
-    // ─── Helpers ────────────────────────────────────────────────────────────
 
     private String header() {
         return "<div style='font-family: Georgia, serif; max-width: 600px; " +
@@ -71,7 +70,6 @@ public class EmailService {
         return !"en".equalsIgnoreCase(lang);
     }
 
-    // ─── 1. Confirmation participation ─────────────────────────────────────
 
     public void sendConfirmationEmail(String toEmail, String token, String lang) {
         String link = "http://localhost:4200/confirm?token=" + token;
@@ -104,12 +102,10 @@ public class EmailService {
         send(toEmail, subject, body);
     }
 
-    // Keep old signature for backward compatibility
     public void sendConfirmationEmail(String toEmail, String token) {
         sendConfirmationEmail(toEmail, token, "fr");
     }
 
-    // ─── 2. Password reset ──────────────────────────────────────────────────
 
     public void sendPasswordResetEmail(String toEmail, String token, String lang) {
         String link = "http://localhost:4200/reset-password?token=" + token;
@@ -146,7 +142,6 @@ public class EmailService {
         sendPasswordResetEmail(toEmail, token, "fr");
     }
 
-    // ─── 3. Account verification ────────────────────────────────────────────
 
     public void sendVerificationEmail(String toEmail, String token, String userType, String lang) {
         String link = "http://localhost:4200/verify-account?token=" + token;
@@ -179,12 +174,10 @@ public class EmailService {
         send(toEmail, subject, body);
     }
 
-    // Keep old signature
     public void sendVerificationEmail(String toEmail, String token, String userType) {
         sendVerificationEmail(toEmail, token, userType, "fr");
     }
 
-    // ─── 4. Organiser verified ──────────────────────────────────────────────
 
     public void sendOrganisateurVerifiedEmail(String toEmail, String lang) {
         boolean fr = isFr(lang);
@@ -195,8 +188,8 @@ public class EmailService {
 
         String body = header() + cardOpen() +
                 "<div style='width:70px;height:70px;background:#fce4ef;border-radius:50%;" +
-                "display:flex;align-items:center;justify-content:center;margin:0 auto 24px;'>" +
-                "<span style='font-size:32px;color:" + PRIMARY + ";'>✓</span></div>" +
+                "text-align:center;line-height:70px;margin:0 auto 24px;" +
+                "font-size:32px;color:" + PRIMARY + ";'>✓</div>" +
                 "<p style='font-size:14px;color:" + PRIMARY + ";text-transform:uppercase;" +
                 "letter-spacing:2px;margin:0 0 20px;font-weight:600;'>" +
                 (fr ? "Compte vérifié" : "Account verified") + "</p>" +
@@ -221,7 +214,6 @@ public class EmailService {
         sendOrganisateurVerifiedEmail(toEmail, "fr");
     }
 
-    // ─── 5. Event approved ──────────────────────────────────────────────────
 
     public void sendEventApprovedEmail(String toEmail, String eventTitle, String lang) {
         boolean fr = isFr(lang);
@@ -231,10 +223,8 @@ public class EmailService {
                 : "Your event is approved — Invitini";
 
         String body = header() + cardOpen() +
-                "<div style='width:70px;height:70px;background:#fce4ef;border-radius:50%;" +
-                "display:flex;align-items:center;justify-content:center;margin:0 auto 24px;'>" +
-                "<span style='font-size:32px;'>📅</span></div>" +
-                "<p style='font-size:14px;color:" + PRIMARY + ";text-transform:uppercase;" +
+        "<div style='width:70px;height:70px;background:#fce4ef;border-radius:50%;margin:0 auto 24px;'></div>" +
+        "<p style='font-size:14px;color:" + PRIMARY + ";text-transform:uppercase;" +
                 "letter-spacing:2px;margin:0 0 20px;font-weight:600;'>" +
                 (fr ? "Événement approuvé" : "Event approved") + "</p>" +
                 "<h2 style='color:#1a1a1a;font-size:24px;margin:0 0 20px;'>" +
@@ -258,7 +248,6 @@ public class EmailService {
         sendEventApprovedEmail(toEmail, eventTitle, "fr");
     }
 
-    // ─── 6. Contact form ────────────────────────────────────────────────────
 
     public void sendContactEmail(String fromName, String fromEmail, String sujet, String message) {
         try {
@@ -298,7 +287,6 @@ public class EmailService {
                 "</div>" + footer();
     }
 
-    // ─── 7. Account deactivation request (organizer) ────────────────────────
 
     public void sendDeactivationRequestEmail(String toAdminEmail, String orgName,
                                              String orgEmail, String lang) {
@@ -333,7 +321,6 @@ public class EmailService {
         send(toAdminEmail, subject, body);
     }
 
-    // ─── 8. Account deactivation confirmed (user/organizer) ─────────────────
 
     public void sendDeactivationConfirmedEmail(String toEmail, String lang) {
         boolean fr = isFr(lang);
@@ -384,7 +371,6 @@ public class EmailService {
         send(toEmail, subject, body);
     }
 
-    // ─── Shared send helper ──────────────────────────────────────────────────
 
     private void send(String toEmail, String subject, String htmlBody) {
         try {
