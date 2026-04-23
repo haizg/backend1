@@ -46,9 +46,8 @@ public class SecurityConfig {
                                 "/api/events/join",
                                 "/api/contact"
                         ).permitAll()
-
+                        .requestMatchers("/api/ai/**").authenticated()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-
                         .anyRequest().authenticated()
                 )
                 .formLogin(f -> f.disable())
