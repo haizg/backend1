@@ -103,7 +103,18 @@ public class EventController {
         event.setProgram(request.getProgram());
         event.setOrganisateur(org);
         event.setApproved(false);
-
+        if (request.getRiskScore() != null) {
+            event.setRiskScore(request.getRiskScore());
+        }
+        if (request.getRiskReason() != null) {
+            event.setRiskReason(request.getRiskReason());
+        }
+        if (request.getPredictedParticipation() != null) {
+            event.setPredictedParticipation(request.getPredictedParticipation());
+        }
+        if (request.getPredictedParticipationReason() != null) {
+            event.setPredictedParticipationReason(request.getPredictedParticipationReason());
+        }
         return ResponseEntity.ok(Map.of("message", "Event created", "event", eventRepository.save(event)));
     }
 

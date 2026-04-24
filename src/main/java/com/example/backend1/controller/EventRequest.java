@@ -9,6 +9,10 @@ public class EventRequest {
     private String location;
     private String imageUrl;
     private String program;
+    private Integer riskScore;
+    private String riskReason;
+    private String predictedParticipation;
+    private String predictedParticipationReason;
 
     private Integer maxParticipants;
     public String getTitle() {
@@ -76,4 +80,15 @@ public class EventRequest {
     public void setMaxParticipants(Integer maxParticipants) {
         this.maxParticipants = maxParticipants;
     }
+
+    public Integer getRiskScore() { return riskScore; }
+    public void setRiskScore(Integer riskScore) { this.riskScore = riskScore; }
+
+    public String getRiskReason() { return riskReason; }
+    public void setRiskReason(String riskReason) { this.riskReason = riskReason; }
+
+    public String getPredictedParticipation() { return predictedParticipation; }
+    public void setPredictedParticipation(String p) { this.predictedParticipation = p; }
+    public String getPredictedParticipationReason() { return predictedParticipationReason; }
+    public void setPredictedParticipationReason(String r) { this.predictedParticipationReason = r; }
 }

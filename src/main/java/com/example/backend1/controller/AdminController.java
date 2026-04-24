@@ -36,7 +36,7 @@ public class AdminController {
 
     @GetMapping("/users")
     public ResponseEntity<List<User>> getAllUsers() {
-        return ResponseEntity.ok(userRepository.findByRoleNot(Role.ROLE_ADMIN));
+        return ResponseEntity.ok(userRepository.findByRole(Role.ROLE_USER));
     }
 
     @DeleteMapping("/users/{id}")
@@ -127,6 +127,10 @@ public class AdminController {
             map.put("participantCount", count);
             map.put("approved", event.isApproved());
             map.put("isFull", isFull);
+            map.put("riskScore", event.getRiskScore());
+            map.put("riskReason", event.getRiskReason());
+            map.put("predictedParticipation", event.getPredictedParticipation());
+            map.put("predictedParticipationReason", event.getPredictedParticipationReason());
             return map;
         }).collect(Collectors.toList());
     }

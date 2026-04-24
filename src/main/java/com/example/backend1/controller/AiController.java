@@ -64,7 +64,11 @@ public class AiController {
             Map<?, ?> message = (Map<?, ?>) ((Map<?, ?>) choices.get(0)).get("message");
             String improvedText = (String) message.get("content");
 
-            return ResponseEntity.ok(Map.of("improved", improvedText));
+            if (improvedText == null || improvedText.isBlank()) {
+                return ResponseEntity.status(500).body(Map.of("error", "Empty AI response"));
+            }
+
+            return ResponseEntity.ok(Map.of("improved", improvedText.trim()));
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -156,7 +160,6 @@ public class AiController {
             Map<?, ?> message = (Map<?, ?>) ((Map<?, ?>) choices.get(0)).get("message");
             String content = (String) message.get("content");
 
-            // clean response in case ai adds backticks
             content = content.trim();
             if (content.startsWith("```")) {
                 content = content.replaceAll("```json", "").replaceAll("```", "").trim();
@@ -171,7 +174,149 @@ public class AiController {
         }
     }
 
+    @PostMapping("/analyze-event-risk")
+    public ResponseEntity<Map<String, Object>> analyzeRisk(@RequestBody Map<String, String> body) {
 
+        String title = body.get("title");
+        String description = body.get("description");
+        String location = body.get("location");
 
+        String prompt = """
+        You are an AI system that detects suspicious or fake events.
+    
+        Analyze the event below and assign a risk score from 0 to 100:
+        - 0 = completely safe and normal
+        - 100 = highly suspicious / fake / scam
+    
+        Also give a short reason (max 15 words).
+    
+        Event:
+        Title: %s
+        Description: %s
+        Location: %s
+    
+        Respond ONLY in JSON format:
+        {
+          "riskScore": number,
+          "reason": "short explanation"
+        }
+        """.formatted(title, description, location);
+
+        Map<String, Object> requestBody = Map.of(
+                "model", "openrouter/free",
+                "messages", new Object[]{
+                        Map.of("role", "user", "content", prompt)
+                }
+        );
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Authorization", "Bearer " + openRouterApiKey);
+
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
+
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            ResponseEntity<String> response = restTemplate.postForEntity(
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    request,
+                    String.class
+            );
+
+            ObjectMapper mapper = new ObjectMapper();
+            Map<?, ?> responseBody = mapper.readValue(response.getBody(), Map.class);
+            List<?> choices = (List<?>) responseBody.get("choices");
+            Map<?, ?> message = (Map<?, ?>) ((Map<?, ?>) choices.get(0)).get("message");
+            String content = ((String) message.get("content")).trim();
+
+            if (content.startsWith("```")) {
+                content = content.replaceAll("```json", "").replaceAll("```", "").trim();
+            }
+
+            Map<String, Object> result = mapper.readValue(content, Map.class);
+
+            return ResponseEntity.ok(result);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(500)
+                    .body(Map.of("error", "Risk analysis failed"));
+        }
+    }
+
+    @PostMapping("/predict-participation")
+    public ResponseEntity<Map<String, Object>> predictParticipation(@RequestBody Map<String, String> body) {
+        String title = body.get("title");
+        String description = body.get("description");
+        String category = body.get("category");
+        String location = body.get("location");
+        String date = body.get("date");
+        String maxParticipants = body.get("maxParticipants");
+
+        String prompt = """
+            You are an AI system that predicts event participation rates for a Tunisian event platform.
+            
+            Analyze the event below and predict participation level:
+            - LOW: less than 40%% of capacity likely to register
+            - MEDIUM: 40-70%% of capacity likely to register
+            - HIGH: more than 70%% of capacity likely to register
+            
+            Consider: category appeal, location, date, description quality, capacity size.
+            
+            Event:
+            Title: %s
+            Category: %s
+            Description: %s
+            Location: %s
+            Date: %s
+            Max Participants: %s
+            
+            Respond ONLY in JSON format:
+            {
+              "level": "LOW" or "MEDIUM" or "HIGH",
+              "reason": "short explanation max 15 words"
+            }
+            """.formatted(title, category, description, location, date, maxParticipants);
+
+        Map<String, Object> requestBody = Map.of(
+                "model", "openrouter/free",
+                "messages", new Object[]{
+                        Map.of("role", "user", "content", prompt)
+                }
+        );
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Authorization", "Bearer " + openRouterApiKey);
+        headers.set("HTTP-Referer", "http://localhost:4200");
+        headers.set("X-Title", "Invitini");
+
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
+
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            ResponseEntity<String> response = restTemplate.postForEntity(
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    request,
+                    String.class
+            );
+
+            ObjectMapper mapper = new ObjectMapper();
+            Map<?, ?> responseBody = mapper.readValue(response.getBody(), Map.class);
+            List<?> choices = (List<?>) responseBody.get("choices");
+            Map<?, ?> message = (Map<?, ?>) ((Map<?, ?>) choices.get(0)).get("message");
+            String content = ((String) message.get("content")).trim();
+
+            if (content.startsWith("```")) {
+                content = content.replaceAll("```json", "").replaceAll("```", "").trim();
+            }
+
+            Map<String, Object> result = mapper.readValue(content, Map.class);
+            return ResponseEntity.ok(result);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("error", "Prediction failed"));
+        }
+    }
 
 }

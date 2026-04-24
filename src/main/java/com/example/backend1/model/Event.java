@@ -46,12 +46,24 @@ public class Event {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organisateur_id", nullable = false)
-    @JsonIgnore  // prevent infinite recursion in JSON serialization
+    @JsonIgnore
     private Organisateur organisateur;
 
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<Participant> participants = new ArrayList<>();
+
+    @Column(name = "risk_score")
+    private Integer riskScore;
+
+    @Column(name = "risk_reason")
+    private String riskReason;
+
+    @Column(name = "predicted_participation")
+    private String predictedParticipation;
+
+    @Column(name = "predicted_participation_reason")
+    private String predictedParticipationReason;
 
     public Event() {}
 
@@ -84,4 +96,12 @@ public class Event {
         if (organisateur != null) this.organisateurEmail = organisateur.getEmail();
     }
     public List<Participant> getParticipants() { return participants; }
+    public Integer getRiskScore() { return riskScore; }
+    public void setRiskScore(Integer riskScore) { this.riskScore = riskScore; }
+    public String getRiskReason() { return riskReason; }
+    public void setRiskReason(String riskReason) { this.riskReason = riskReason; }
+    public String getPredictedParticipation() { return predictedParticipation; }
+    public void setPredictedParticipation(String p) { this.predictedParticipation = p; }
+    public String getPredictedParticipationReason() { return predictedParticipationReason; }
+    public void setPredictedParticipationReason(String r) { this.predictedParticipationReason = r; }
 }
