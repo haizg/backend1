@@ -90,8 +90,9 @@ public class ReviewService {
                 .map(this::toMap)
                 .collect(Collectors.toList());
     }
+
     public Map<String, Object> getOrganizerReviewStats(Long orgId) {
-        List<Review> reviews = reviewRepository.findByEventOrganisateur_Id(orgId);
+        List<Review> reviews = reviewRepository.findByEvent_Organisateur_Id(orgId);
         double avg = reviews.isEmpty() ? 0.0 :
                 reviews.stream().mapToInt(Review::getRating).average().orElse(0.0);
         avg = Math.round(avg * 10.0) / 10.0;
