@@ -36,7 +36,6 @@ public class UserService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        // OrganisateurRepository is a sub-repo, check it first
         Optional<Organisateur> orgOpt = organisateurRepository.findByEmail(email);
         if (orgOpt.isPresent()) {
             Organisateur org = orgOpt.get();
@@ -57,7 +56,6 @@ public class UserService implements UserDetailsService {
     }
 
     public String login(String email, String password) {
-        // Check organisateur first (subclass)
         Optional<Organisateur> orgOpt = organisateurRepository.findByEmail(email);
         if (orgOpt.isPresent()) {
             Organisateur org = orgOpt.get();
@@ -65,7 +63,7 @@ public class UserService implements UserDetailsService {
             if (!org.isActive()) throw new RuntimeException("ACCOUNT_DEACTIVATED");
             if (!org.isVerified()) throw new RuntimeException("ACCOUNT_NOT_VERIFIED");
             return jwtUtil.generateToken(org.getEmail(), org.getRole(),
-                    org.getNom(), org.getPrenom(), org.isVerified(), org.isAdminVerified());
+                    org.getNom(), org.getPrenom(), org.isVerified(), org.isAdminVerified(), org.getId());
         }
 
         Optional<User> userOpt = userRepository.findByEmail(email);
@@ -75,7 +73,7 @@ public class UserService implements UserDetailsService {
             if (!user.isActive()) throw new RuntimeException("ACCOUNT_DEACTIVATED");
             if (!user.isVerified()) throw new RuntimeException("ACCOUNT_NOT_VERIFIED");
             return jwtUtil.generateToken(user.getEmail(), user.getRole(),
-                    user.getNom(), user.getPrenom(), user.isVerified(), false);
+                    user.getNom(), user.getPrenom(), user.isVerified(), false, user.getId());
         }
 
         return null;

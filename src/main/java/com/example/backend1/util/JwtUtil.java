@@ -18,7 +18,7 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(SECRET.getBytes());
     }
 
-    public String generateToken(String email, Role role, String nom, String prenom, boolean verified, boolean adminVerified){
+    public String generateToken(String email, Role role, String nom, String prenom, boolean verified, boolean adminVerified, Long id){
         return Jwts.builder()
                 .setSubject(email)
                 .claim("role", role.name())
@@ -26,6 +26,7 @@ public class JwtUtil {
                 .claim("prenom", prenom)
                 .claim("verified", verified)
                 .claim("adminVerified", adminVerified)
+                .claim("id", id)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
@@ -46,6 +47,11 @@ public class JwtUtil {
         }catch (JwtException | IllegalArgumentException e){
             return false;
         }
+    }
+    public Long extractUserId(String token) {
+        Object id = getClaims(token).get("id");
+        if (id == null) return null;
+        return Long.valueOf(id.toString());
     }
 
     public boolean isTokenExpired(String token){

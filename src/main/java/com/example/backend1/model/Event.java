@@ -66,7 +66,10 @@ public class Event {
     private String predictedParticipationReason;
 
     public Event() {}
-
+    @Transient
+    public Long getOrganisateurId() {
+        return organisateur != null ? organisateur.getId() : null;
+    }
     public Long getId() { return id; }
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }

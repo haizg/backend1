@@ -8,6 +8,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -39,15 +41,24 @@ public class EventController {
 
     @GetMapping
     public List<Map<String, Object>> getAllEvents() {
+        LocalDate today = LocalDate.now();
         return eventRepository.findByApprovedTrue().stream()
+                .filter(event -> {
+                    try {
+                        LocalDate eventDate = LocalDate.parse(event.getDate());
+                        return !eventDate.isBefore(today);
+                    } catch (DateTimeParseException e) {
+                        return true;
+                    }
+                })
                 .map(this::toEventMap)
                 .collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Event> getEventById(@PathVariable Long id) {
+    public ResponseEntity<Map<String, Object>> getEventById(@PathVariable Long id) {
         return eventRepository.findById(id)
-                .map(ResponseEntity::ok)
+                .map(event -> ResponseEntity.ok(toEventMap(event)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
@@ -103,18 +114,11 @@ public class EventController {
         event.setProgram(request.getProgram());
         event.setOrganisateur(org);
         event.setApproved(false);
-        if (request.getRiskScore() != null) {
-            event.setRiskScore(request.getRiskScore());
-        }
-        if (request.getRiskReason() != null) {
-            event.setRiskReason(request.getRiskReason());
-        }
-        if (request.getPredictedParticipation() != null) {
-            event.setPredictedParticipation(request.getPredictedParticipation());
-        }
-        if (request.getPredictedParticipationReason() != null) {
-            event.setPredictedParticipationReason(request.getPredictedParticipationReason());
-        }
+        if (request.getRiskScore() != null) event.setRiskScore(request.getRiskScore());
+        if (request.getRiskReason() != null) event.setRiskReason(request.getRiskReason());
+        if (request.getPredictedParticipation() != null) event.setPredictedParticipation(request.getPredictedParticipation());
+        if (request.getPredictedParticipationReason() != null) event.setPredictedParticipationReason(request.getPredictedParticipationReason());
+
         return ResponseEntity.ok(Map.of("message", "Event created", "event", eventRepository.save(event)));
     }
 
@@ -166,7 +170,6 @@ public class EventController {
         ).orElse(ResponseEntity.notFound().build());
     }
 
-
     private Map<String, Object> toEventMap(Event event) {
         int count = participantRepository.countByEventAndVerifiedTrue(event);
         boolean isFull = event.getMaxParticipants() != null && count >= event.getMaxParticipants();
@@ -183,10 +186,16 @@ public class EventController {
         map.put("category", event.getCategory());
         map.put("organisateurEmail", event.getOrganisateurEmail());
         map.put("organisateurVerified", org != null && org.isAdminVerified());
+        map.put("organisateurId", org != null ? org.getId() : null);
         map.put("maxParticipants", event.getMaxParticipants());
         map.put("participantCount", count);
         map.put("isFull", isFull);
         map.put("approved", event.isApproved());
+        map.put("program", event.getProgram());
+        map.put("riskScore", event.getRiskScore());
+        map.put("riskReason", event.getRiskReason());
+        map.put("predictedParticipation", event.getPredictedParticipation());
+        map.put("predictedParticipationReason", event.getPredictedParticipationReason());
         return map;
     }
 }

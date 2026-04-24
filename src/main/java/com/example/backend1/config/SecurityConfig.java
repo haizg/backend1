@@ -37,6 +37,7 @@ public class SecurityConfig {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers("/api/organizers/**").permitAll()  // ← ADD THIS FIRST
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/api/events",
@@ -44,6 +45,8 @@ public class SecurityConfig {
                                 "/api/events/*/participants",
                                 "/api/events/**",
                                 "/api/events/join",
+                                "/api/events/*/reviews",
+                                "/api/organizers/**",
                                 "/api/contact"
                         ).permitAll()
                         .requestMatchers("/api/ai/**").authenticated()
