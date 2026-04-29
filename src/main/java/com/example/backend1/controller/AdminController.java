@@ -127,6 +127,7 @@ public class AdminController {
             map.put("participantCount", count);
             map.put("approved", event.isApproved());
             map.put("isFull", isFull);
+            map.put("program", event.getProgram());
             map.put("riskScore", event.getRiskScore());
             map.put("riskReason", event.getRiskReason());
             map.put("predictedParticipation", event.getPredictedParticipation());
@@ -189,6 +190,7 @@ public class AdminController {
             event.setImageUrl(request.getImageUrl());
             event.setMaxParticipants(request.getMaxParticipants());
             event.setProgram(request.getProgram());
+            eventRepository.save(event);
             return ResponseEntity.ok(Map.of("message", "Event updated"));
         }).orElse(ResponseEntity.notFound().build());
     }
