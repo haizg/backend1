@@ -20,4 +20,5 @@ public interface ParticipantRepository extends JpaRepository<Participant, Long> 
     void deleteByEvent(Event event);
     void deleteByEmail(String email);
     long countByVerified(boolean verified);
-}
+
+    Optional<Participant> findByEmailAndEvent(String email, Event event);}

@@ -198,4 +198,44 @@ public class EventController {
         map.put("predictedParticipationReason", event.getPredictedParticipationReason());
         return map;
     }
+
+    @DeleteMapping("/{eventId}/unregister")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> unregisterFromEvent(
+            @PathVariable Long eventId,
+            Authentication authentication) {
+
+        String email = authentication.getName();
+
+        Event event = eventRepository.findById(eventId).orElse(null);
+        if (event == null) return ResponseEntity.notFound().build();
+
+        // Check 24h deadline
+        try {
+            LocalDate eventDate = LocalDate.parse(event.getDate());
+            LocalDate tomorrow = LocalDate.now().plusDays(1);
+            if (!eventDate.isAfter(tomorrow)) {
+                return ResponseEntity.badRequest().body(
+                        Map.of("error", "DEADLINE_PASSED",
+                                "message", "Désinscription impossible moins de 24h avant l'événement.")
+                );
+            }
+        } catch (DateTimeParseException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "INVALID_DATE"));
+        }
+
+        // Find participant record
+        Participant participant = participantRepository
+                .findByEmailAndEvent(email, event)
+                .orElse(null);
+
+        if (participant == null) {
+            return ResponseEntity.badRequest().body(
+                    Map.of("error", "NOT_REGISTERED", "message", "Vous n'êtes pas inscrit à cet événement.")
+            );
+        }
+
+        participantRepository.delete(participant);
+        return ResponseEntity.ok(Map.of("message", "Désinscription réussie."));
+    }
 }
