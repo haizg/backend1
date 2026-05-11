@@ -5,9 +5,12 @@ import com.example.backend1.repository.*;
 import com.example.backend1.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
+
 
 import java.util.Map;
 import java.util.Optional;
@@ -153,5 +156,14 @@ public class UserController {
     private String extractToken(HttpServletRequest request) {
         String header = request.getHeader("Authorization");
         return (header != null && header.startsWith("Bearer ")) ? header.substring(7) : null;
+    }
+
+    @GetMapping("/my-organizer-id")
+    @PreAuthorize("hasRole('ROLE_ORGANISATEUR')")
+    public ResponseEntity<?> getMyOrganisateurId(Authentication authentication) {
+        String email = authentication.getName();
+        return organisateurRepository.findByEmail(email)
+                .map(org -> ResponseEntity.ok(Map.of("id", org.getId())))
+                .orElse(ResponseEntity.notFound().build());
     }
 }

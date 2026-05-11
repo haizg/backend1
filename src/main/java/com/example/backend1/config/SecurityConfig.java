@@ -50,6 +50,7 @@ public class SecurityConfig {
                                 "/api/contact"
                         ).permitAll()
                         .requestMatchers("/api/ai/**").authenticated()
+                        .requestMatchers("/api/user/**").authenticated()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )

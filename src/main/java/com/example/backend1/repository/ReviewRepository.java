@@ -15,4 +15,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     Optional<Review> findByEventAndUser(Event event, User user);
     boolean existsByEventAndUser(Event event, User user);
     List<Review> findByEvent_Organisateur_Id(Long orgId);
+    List<Review>findByEvent(Event event);
+    List<Review> findByFlaggedTrue();
 }

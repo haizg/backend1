@@ -386,4 +386,64 @@ public class EmailService {
             throw new RuntimeException("Failed to send email", e);
         }
     }
+
+    public void sendQrTicketEmail(String to, String token,
+                                  String eventTitle, String eventDate,
+                                  String eventLocation) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setTo(to);
+            helper.setSubject(" Votre billet — " + eventTitle);
+
+            // QR code image URL — points to your scan endpoint
+            // The QR encodes the token so the organizer's scanner reads it
+            String qrImageUrl = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + token;
+
+            String html = """
+            <div style="font-family: Georgia, serif; max-width: 520px; margin: auto; padding: 32px; background: #ffffff; border-radius: 12px; border: 1px solid #f0dde7;">
+              <h2 style="color: #A53A6B; text-align: center; margin-bottom: 4px;">Invitini</h2>
+              <p style="text-align: center; color: #888; font-size: 13px; margin-bottom: 28px;">Votre participation est confirmée !</p>
+
+              <div style="background: #fdf5f8; border-radius: 10px; padding: 20px; margin-bottom: 24px; text-align: center;">
+                <h3 style="color: #1a1a1a; margin: 0 0 8px;">""" + eventTitle + """
+                </h3>
+                <p style="color: #666; font-size: 14px; margin: 4px 0;">
+                  """ + eventDate + """
+                </p>
+                <p style="color: #666; font-size: 14px; margin: 4px 0;">
+                   """ + eventLocation + """
+                </p>
+              </div>
+
+              <div style="text-align: center; margin-bottom: 24px;">
+                <p style="color: #A53A6B; font-weight: 700; font-size: 15px; margin-bottom: 12px;">
+                  ️ Votre billet d'entrée
+                </p>
+                <img src=\"""" + qrImageUrl + """
+                     " alt="QR Code" style="width: 180px; height: 180px; border: 3px solid #f0dde7; border-radius: 10px; padding: 8px; background: white;" />
+                <p style="color: #999; font-size: 12px; margin-top: 10px;">
+                  Présentez ce QR code à l'entrée de l'événement.<br>
+                  L'organisateur le scannera pour enregistrer votre présence.
+                </p>
+              </div>
+
+              <div style="background: #fff3cd; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px;">
+                <p style="color: #856404; font-size: 13px; margin: 0;">
+                  ! Ne partagez pas ce QR code — il est personnel et unique.
+                </p>
+              </div>
+
+              <p style="text-align: center; color: #bbb; font-size: 12px;">
+                Invitini — Plateforme d'événements culturels et éducatifs en Tunisie
+              </p>
+            </div>
+            """;
+
+            helper.setText(html, true);
+            mailSender.send(message);
+        } catch (Exception e) {
+            System.err.println("Failed to send QR ticket email: " + e.getMessage());
+        }
+    }
 }

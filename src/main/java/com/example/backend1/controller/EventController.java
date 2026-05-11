@@ -22,6 +22,7 @@ public class EventController {
     private final EventRepository eventRepository;
     private final OrganisateurRepository organisateurRepository;
     private final UserRepository userRepository;
+    private final ReviewRepository reviewRepository;
     private final JwtUtil jwtUtil;
     private final EmailService emailService;
 
@@ -30,13 +31,16 @@ public class EventController {
                            OrganisateurRepository organisateurRepository,
                            UserRepository userRepository,
                            JwtUtil jwtUtil,
-                           EmailService emailService) {
+                           EmailService emailService,
+                           ReviewRepository reviewRepository) {
         this.participantRepository = participantRepository;
         this.eventRepository = eventRepository;
         this.organisateurRepository = organisateurRepository;
         this.userRepository = userRepository;
         this.jwtUtil = jwtUtil;
         this.emailService = emailService;
+        this.reviewRepository = reviewRepository;
+
     }
 
     @GetMapping
@@ -159,44 +163,72 @@ public class EventController {
         return participantRepository.findByConfirmationToken(token).map(p -> {
             p.setVerified(true);
             participantRepository.save(p);
+            if (p.getEvent() != null) {
+                emailService.sendQrTicketEmail(
+                        p.getEmail(),
+                        p.getConfirmationToken(),
+                        p.getEvent().getTitle(),
+                        p.getEvent().getDate(),
+                        p.getEvent().getLocation()
+                );
+            }
             return ResponseEntity.ok("Participation confirmée !");
         }).orElse(ResponseEntity.badRequest().build());
     }
 
+
+    /*
     @GetMapping("/{id}/participants")
     public ResponseEntity<?> getEventParticipants(@PathVariable Long id) {
         return eventRepository.findById(id).map(event ->
                 ResponseEntity.ok(participantRepository.findByEvent(event))
         ).orElse(ResponseEntity.notFound().build());
     }
+    */
 
-    private Map<String, Object> toEventMap(Event event) {
-        int count = participantRepository.countByEventAndVerifiedTrue(event);
-        boolean isFull = event.getMaxParticipants() != null && count >= event.getMaxParticipants();
-        Organisateur org = event.getOrganisateur();
+    @GetMapping("/{id}/participants")
+    public ResponseEntity<?> getEventParticipants(@PathVariable Long id) {
+        return eventRepository.findById(id).map(event -> {
+            List<Map<String, Object>> result = participantRepository
+                    .findByEvent(event).stream().map(p -> {
+                        Map<String, Object> map = new LinkedHashMap<>();
+                        map.put("email", p.getEmail());
+                        map.put("verified", p.isVerified());
+                        map.put("attended", p.isAttended());
+                        map.put("confirmationToken", p.getConfirmationToken());
+                        return map;
+                    }).collect(Collectors.toList());
+            return ResponseEntity.ok(result);
+        }).orElse(ResponseEntity.notFound().build());
+    }
 
-        Map<String, Object> map = new LinkedHashMap<>();
-        map.put("id", event.getId());
-        map.put("title", event.getTitle());
-        map.put("description", event.getDescription());
-        map.put("date", event.getDate());
-        map.put("time", event.getTime());
-        map.put("location", event.getLocation());
-        map.put("imageUrl", event.getImageUrl());
-        map.put("category", event.getCategory());
-        map.put("organisateurEmail", event.getOrganisateurEmail());
-        map.put("organisateurVerified", org != null && org.isAdminVerified());
-        map.put("organisateurId", org != null ? org.getId() : null);
-        map.put("maxParticipants", event.getMaxParticipants());
-        map.put("participantCount", count);
-        map.put("isFull", isFull);
-        map.put("approved", event.isApproved());
-        map.put("program", event.getProgram());
-        map.put("riskScore", event.getRiskScore());
-        map.put("riskReason", event.getRiskReason());
-        map.put("predictedParticipation", event.getPredictedParticipation());
-        map.put("predictedParticipationReason", event.getPredictedParticipationReason());
-        return map;
+        private Map<String, Object> toEventMap(Event event) {
+            int count = participantRepository.countByEventAndVerifiedTrue(event);
+            boolean isFull = event.getMaxParticipants() != null && count >= event.getMaxParticipants();
+            Organisateur org = event.getOrganisateur();
+
+            Map<String, Object> map = new LinkedHashMap<>();
+            map.put("id", event.getId());
+            map.put("title", event.getTitle());
+            map.put("description", event.getDescription());
+            map.put("date", event.getDate());
+            map.put("time", event.getTime());
+            map.put("location", event.getLocation());
+            map.put("imageUrl", event.getImageUrl());
+            map.put("category", event.getCategory());
+            map.put("organisateurEmail", event.getOrganisateurEmail());
+            map.put("organisateurVerified", org != null && org.isAdminVerified());
+            map.put("organisateurId", org != null ? org.getId() : null);
+            map.put("maxParticipants", event.getMaxParticipants());
+            map.put("participantCount", count);
+            map.put("isFull", isFull);
+            map.put("approved", event.isApproved());
+            map.put("program", event.getProgram());
+            map.put("riskScore", event.getRiskScore());
+            map.put("riskReason", event.getRiskReason());
+            map.put("predictedParticipation", event.getPredictedParticipation());
+            map.put("predictedParticipationReason", event.getPredictedParticipationReason());
+            return map;
     }
 
     @DeleteMapping("/{eventId}/unregister")
@@ -237,5 +269,77 @@ public class EventController {
 
         participantRepository.delete(participant);
         return ResponseEntity.ok(Map.of("message", "Désinscription réussie."));
+    }
+
+    @GetMapping("/my-reviews")
+    @PreAuthorize("hasRole('ROLE_ORGANISATEUR')")
+    public ResponseEntity<?> getMyReviews(Authentication authentication) {
+        String email = authentication.getName();
+        Organisateur org = organisateurRepository.findByEmail(email).orElse(null);
+        if (org == null) return ResponseEntity.notFound().build();
+
+        List<Event> myEvents = eventRepository.findByOrganisateur(org);
+        List<Map<String, Object>> reviews = new ArrayList<>();
+
+        for (Event event : myEvents) {
+            reviewRepository.findByEvent(event).forEach(review -> {
+                Map<String, Object> map = new LinkedHashMap<>();
+                map.put("eventTitle", event.getTitle());
+                map.put("eventId", event.getId());
+                map.put("rating", review.getRating());
+                map.put("comment", review.getComment());
+                map.put("userPrenom", review.getUserPrenom());
+                map.put("userNom", review.getUserNom());
+                reviews.add(map);
+            });
+        }
+        return ResponseEntity.ok(reviews);
+    }
+
+    @GetMapping("/scan")
+    public ResponseEntity<?> scanQrCode(@RequestParam String token) {
+        // Find participant by their unique confirmation token
+        return participantRepository.findByConfirmationToken(token).map(p -> {
+            if (!p.isVerified()) {
+                // Participant never confirmed their email — reject scan
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "UNVERIFIED",
+                                "message", "Ce participant n'a pas confirmé sa participation."));
+            }
+            if (p.isAttended()) {
+                // Already scanned — prevent duplicate check-in
+                return ResponseEntity.ok(Map.of(
+                        "status", "ALREADY_SCANNED",
+                        "message", "Ce participant est déjà enregistré comme présent.",
+                        "email", p.getEmail()
+                ));
+            }
+            // Mark as attended
+            p.setAttended(true);
+            participantRepository.save(p);
+            return ResponseEntity.ok(Map.of(
+                    "status", "SUCCESS",
+                    "message", "Présence enregistrée avec succès !",
+                    "email", p.getEmail()
+            ));
+        }).orElse(ResponseEntity.badRequest()
+                .body(Map.of("error", "NOT_FOUND", "message", "QR code invalide.")));
+    }
+
+    @GetMapping("/{eventId}/my-ticket")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> getMyTicket(@PathVariable Long eventId,
+                                         Authentication authentication) {
+        String email = authentication.getName();
+        Event event = eventRepository.findById(eventId).orElse(null);
+        if (event == null) return ResponseEntity.notFound().build();
+
+        return participantRepository.findByEmailAndEvent(email, event)
+                .map(p -> ResponseEntity.ok(Map.of(
+                        "token", p.getConfirmationToken(),
+                        "attended", p.isAttended(),
+                        "verified", p.isVerified()
+                )))
+                .orElse(ResponseEntity.notFound().build());
     }
 }

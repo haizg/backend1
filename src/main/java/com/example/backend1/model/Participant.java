@@ -30,6 +30,9 @@ public class Participant {
     @JsonIgnore
     private User user;
 
+    @Column(nullable = false)
+    private boolean attended = false;
+
     public Participant() {}
 
     public Long getEventId() {
@@ -47,4 +50,6 @@ public class Participant {
     public void setEvent(Event event) { this.event = event; }
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
+    public boolean isAttended() { return attended; }
+    public void setAttended(boolean attended) { this.attended = attended; }
 }

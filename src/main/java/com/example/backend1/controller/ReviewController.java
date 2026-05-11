@@ -1,9 +1,11 @@
 package com.example.backend1.controller;
 
+import com.example.backend1.repository.ReviewRepository;
 import com.example.backend1.service.ReviewService;
 import com.example.backend1.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,10 +17,12 @@ public class ReviewController {
 
     private final ReviewService reviewService;
     private final JwtUtil jwtUtil;
+    private final ReviewRepository reviewRepository;
 
-    public ReviewController(ReviewService reviewService, JwtUtil jwtUtil) {
+    public ReviewController(ReviewService reviewService, JwtUtil jwtUtil, ReviewRepository reviewRepository) {
         this.reviewService = reviewService;
         this.jwtUtil = jwtUtil;
+        this.reviewRepository=reviewRepository;
     }
 
     @GetMapping("/events/{eventId}/reviews")
@@ -71,5 +75,15 @@ public class ReviewController {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    @PutMapping("/reviews/{reviewId}/flag")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> flagReview(@PathVariable Long reviewId) {
+        return reviewRepository.findById(reviewId).map(review -> {
+            review.setFlagged(true);
+            reviewRepository.save(review);
+            return ResponseEntity.ok(Map.of("message", "Avis signalé."));
+        }).orElse(ResponseEntity.notFound().build());
     }
 }

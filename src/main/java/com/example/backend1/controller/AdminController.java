@@ -21,17 +21,20 @@ public class AdminController {
     private final UserRepository userRepository;
     private final OrganisateurRepository organisateurRepository;
     private final EmailService emailService;
+    private final ReviewRepository reviewRepository;
 
     public AdminController(ParticipantRepository participantRepository,
                            EventRepository eventRepository,
                            UserRepository userRepository,
                            OrganisateurRepository organisateurRepository,
-                           EmailService emailService) {
+                           EmailService emailService,
+                           ReviewRepository reviewRepository) {
         this.participantRepository = participantRepository;
         this.eventRepository = eventRepository;
         this.userRepository = userRepository;
         this.organisateurRepository = organisateurRepository;
         this.emailService = emailService;
+        this.reviewRepository=reviewRepository;
     }
 
     @GetMapping("/users")
@@ -147,7 +150,7 @@ public class AdminController {
     }
 
     @PutMapping("/organisateurs/{id}/verify")
-    public ResponseEntity<?> toggleVerifyOrganisateur(@PathVariable Long id) {
+    public ResponseEntity<?> verifyOrganisateur(@PathVariable Long id) {
         return organisateurRepository.findById(id).map(org -> {
             org.setAdminVerified(!org.isAdminVerified());
             organisateurRepository.save(org);
@@ -219,6 +222,31 @@ public class AdminController {
             organisateurRepository.save(org);
             emailService.sendDeactivationRejectedEmail(org.getEmail(), "fr");
             return ResponseEntity.ok(Map.of("message", "Demande refusée."));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/reviews/flagged")
+    public ResponseEntity<?> getFlaggedReviews() {
+        List<Review> flagged = reviewRepository.findByFlaggedTrue();
+        List<Map<String, Object>> result = flagged.stream().map(r -> {
+            Map<String, Object> map = new LinkedHashMap<>();
+            map.put("id", r.getId());
+            map.put("comment", r.getComment());
+            map.put("rating", r.getRating());
+            map.put("userPrenom", r.getUserPrenom());
+            map.put("userNom", r.getUserNom());
+            map.put("eventTitle", r.getEvent().getTitle());
+            map.put("eventId", r.getEvent().getId());
+            return map;
+        }).collect(Collectors.toList());
+        return ResponseEntity.ok(result);
+    }
+
+    @DeleteMapping("/reviews/{id}")
+    public ResponseEntity<?> deleteReview(@PathVariable Long id) {
+        return reviewRepository.findById(id).map(r -> {
+            reviewRepository.delete(r);
+            return ResponseEntity.ok(Map.of("message", "Avis supprimé."));
         }).orElse(ResponseEntity.notFound().build());
     }
 }

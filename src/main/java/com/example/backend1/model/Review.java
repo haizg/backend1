@@ -39,6 +39,9 @@ public class Review {
     @Column(nullable = false)
     private String userNom;
 
+    @Column(nullable = false)
+    private boolean flagged = false;
+
     public Review() {}
 
     public Long getId() { return id; }
@@ -56,4 +59,6 @@ public class Review {
     public void setUserPrenom(String userPrenom) { this.userPrenom = userPrenom; }
     public String getUserNom() { return userNom; }
     public void setUserNom(String userNom) { this.userNom = userNom; }
+    public boolean isFlagged() { return flagged; }
+    public void setFlagged(boolean flagged) { this.flagged = flagged; }
 }

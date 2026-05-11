@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.HashMap;
 
 @RestController
-@RequestMapping("/api/contact")
+@RequestMapping("/apicontact")
 @CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
 public class ContactController {
 

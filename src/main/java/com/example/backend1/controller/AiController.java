@@ -110,26 +110,26 @@ public class AiController {
         }
 
         String prompt = """
-            You are an event recommendation assistant for Invitini, a Tunisian cultural and educational event platform.
-            
-            The user has previously participated in these events:
-            %s
-            
-            Here are the available upcoming events they haven't joined yet:
-            %s
-            
-            Based on the user's interests shown by their history, recommend the 3 most relevant events.
-            
-            Respond ONLY with a valid JSON array, no explanation, no markdown, no backticks. Example format:
-            [
-              {"id": 1, "reason": "Short reason in the same language as the event title"},
-              {"id": 2, "reason": "Short reason"},
-              {"id": 3, "reason": "Short reason"}
-            ]
-            
-            If the user has no history, recommend 3 events based on popularity and variety.
-            Return exactly 3 items. Only include IDs from the provided available events list.
-            """.formatted(userHistory, availableEvents);
+                You are an event recommendation assistant for Invitini, a Tunisian cultural and educational event platform.
+                
+                The user has previously participated in these events:
+                %s
+                
+                Here are the available upcoming events they haven't joined yet:
+                %s
+                
+                Based on the user's interests shown by their history, recommend the 3 most relevant events.
+                
+                Respond ONLY with a valid JSON array, no explanation, no markdown, no backticks. Example format:
+                [
+                  {"id": 1, "reason": "Short reason in the same language as the event title"},
+                  {"id": 2, "reason": "Short reason"},
+                  {"id": 3, "reason": "Short reason"}
+                ]
+                
+                If the user has no history, recommend 3 events based on popularity and variety.
+                Return exactly 3 items. Only include IDs from the provided available events list.
+                """.formatted(userHistory, availableEvents);
 
         Map<String, Object> requestBody = Map.of(
                 "model", "openrouter/free",
@@ -165,8 +165,25 @@ public class AiController {
                 content = content.replaceAll("```json", "").replaceAll("```", "").trim();
             }
 
-            List<?> recommendations = mapper.readValue(content, List.class);
-            return ResponseEntity.ok(Map.of("recommendations", recommendations));
+            //List<?> recommendations = mapper.readValue(content, List.class);
+            //return ResponseEntity.ok(Map.of("recommendations", recommendations));
+
+            List<?> recommendations;
+
+            try {
+                recommendations = mapper.readValue(content, List.class);
+            } catch (Exception ex) {
+                System.out.println("Invalid JSON from AI:");
+                System.out.println(content);
+
+                return ResponseEntity.status(500).body(
+                        Map.of("error", "AI returned invalid JSON", "raw", content)
+                );
+            }
+
+            return ResponseEntity.ok(
+                    Map.of("recommendations", recommendations)
+            );
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -198,7 +215,7 @@ public class AiController {
         Respond ONLY in JSON format:
         {
           "riskScore": number,
-          "reason": "short explanation"
+          "reason": "short explanation in FRENSH"
         }
         """.formatted(title, description, location);
 
@@ -273,7 +290,7 @@ public class AiController {
             Respond ONLY in JSON format:
             {
               "level": "LOW" or "MEDIUM" or "HIGH",
-              "reason": "short explanation max 15 words"
+              "reason": "short explanation max 15 words IN FRENSH"
             }
             """.formatted(title, category, description, location, date, maxParticipants);
 

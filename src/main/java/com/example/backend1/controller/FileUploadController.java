@@ -15,11 +15,6 @@ public class FileUploadController {
     private MinioService minioService;
     @PostMapping
     public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file) {
-
-        System.out.println("📤 Upload request received");
-        System.out.println("   Filename: " + file.getOriginalFilename());
-        System.out.println("   Size: " + file.getSize() + " bytes");
-        System.out.println("   Content-Type: " + file.getContentType());
         try {
             String contentType = file.getContentType();
             if (contentType == null || !contentType.startsWith("image/")) {
@@ -39,7 +34,7 @@ public class FileUploadController {
                     .body(Map.of("error", e.getMessage()));
 
         } catch (Exception e) {
-            System.err.println("❌ Upload error: " + e.getMessage());
+            System.err.println(" Upload error: " + e.getMessage());
             e.printStackTrace();
 
             return ResponseEntity.status(500)
