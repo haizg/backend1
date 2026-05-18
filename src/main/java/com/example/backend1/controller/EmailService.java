@@ -247,7 +247,39 @@ public class EmailService {
     public void sendEventApprovedEmail(String toEmail, String eventTitle) {
         sendEventApprovedEmail(toEmail, eventTitle, "fr");
     }
+    public void sendEventRejectedEmail(String toEmail, String eventTitle, String lang) {
+        boolean fr = isFr(lang);
 
+        String subject = fr
+                ? "Votre événement a été refusé — Invitini"
+                : "Your event has been rejected — Invitini";
+
+        String body = header() + cardOpen() +
+                "<div style='width:70px;height:70px;background:#fce4ef;border-radius:50%;margin:0 auto 24px;" +
+                "text-align:center;line-height:70px;font-size:32px;color:" + PRIMARY + ";'>✕</div>" +
+                "<p style='font-size:14px;color:" + PRIMARY + ";text-transform:uppercase;" +
+                "letter-spacing:2px;margin:0 0 20px;font-weight:600;'>" +
+                (fr ? "Événement refusé" : "Event rejected") + "</p>" +
+                "<h2 style='color:#1a1a1a;font-size:24px;margin:0 0 20px;'>" +
+                (fr ? "Votre événement n'a pas été approuvé" : "Your event was not approved") + "</h2>" +
+                divider() +
+                "<p style='color:#666;font-size:16px;line-height:1.6;margin:20px 0;'>" +
+                (fr ? "Votre événement <strong style='color:" + PRIMARY + ";'>\"" + eventTitle + "\"</strong> a été examiné et refusé par notre équipe."
+                        : "Your event <strong style='color:" + PRIMARY + ";'>\"" + eventTitle + "\"</strong> was reviewed and rejected by our team.") + "</p>" +
+                "<p style='color:#666;font-size:15px;line-height:1.6;margin:20px 0;'>" +
+                (fr ? "Pour toute question, contactez-nous à <strong>support@invitini.tn</strong>."
+                        : "For any questions, contact us at <strong>support@invitini.tn</strong>.") + "</p>" +
+                button("http://localhost:4200/home",
+                        fr ? "Retour à la plateforme" : "Back to platform") +
+                divider() +
+                teamSignature(lang) + cardClose() + footer();
+
+        send(toEmail, subject, body);
+    }
+
+    public void sendEventRejectedEmail(String toEmail, String eventTitle) {
+        sendEventRejectedEmail(toEmail, eventTitle, "fr");
+    }
 
     public void sendContactEmail(String fromName, String fromEmail, String sujet, String message) {
         try {

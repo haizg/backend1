@@ -148,6 +148,16 @@ public class AdminController {
             return ResponseEntity.ok(Map.of("approved", true));
         }).orElse(ResponseEntity.notFound().build());
     }
+    @DeleteMapping("/events/{id}/reject")
+    @Transactional
+    public ResponseEntity<?> rejectEvent(@PathVariable Long id) {
+        return eventRepository.findById(id).map(event -> {
+            emailService.sendEventRejectedEmail(event.getOrganisateurEmail(), event.getTitle());
+            participantRepository.deleteByEvent(event);
+            eventRepository.delete(event);
+            return ResponseEntity.ok(Map.of("rejected", true));
+        }).orElse(ResponseEntity.notFound().build());
+    }
 
     @PutMapping("/organisateurs/{id}/verify")
     public ResponseEntity<?> verifyOrganisateur(@PathVariable Long id) {
