@@ -77,6 +77,16 @@ public class EventController {
         Event event = eventRepository.findById(eventId).orElse(null);
         if (event == null) return ResponseEntity.notFound().build();
 
+
+        Optional<Participant> existing = participantRepository.findByEmailAndEvent(email, event);
+        if (existing.isPresent()) {
+            if (existing.get().isVerified()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "ALREADY_CONFIRMED"));
+            } else {
+                participantRepository.delete(existing.get());
+            }
+        }
+
         if (event.getMaxParticipants() != null) {
             int count = participantRepository.countByEventAndVerifiedTrue(event);
             if (count >= event.getMaxParticipants())
@@ -147,8 +157,9 @@ public class EventController {
     @GetMapping("/my-events")
     public List<Map<String, Object>> getMyEvents(@RequestParam String email) {
         return participantRepository.findByEmail(email).stream()
+                .filter(Participant::isVerified)
+                .filter(p -> p.getEvent() != null)
                 .map(Participant::getEvent)
-                .filter(Objects::nonNull)
                 .map(this::toEventMap)
                 .collect(Collectors.toList());
     }

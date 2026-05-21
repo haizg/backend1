@@ -110,7 +110,10 @@ public class UserController {
         if (token == null) return ResponseEntity.status(401).build();
         String email = jwtUtil.extractEmail(token);
         var ids = participantRepository.findByEmail(email).stream()
-                .map(Participant::getEventId).collect(Collectors.toList());
+                .filter(Participant::isVerified)
+                .filter(p -> p.getEvent() != null)
+                .map(Participant::getEventId)
+                .collect(Collectors.toList());
         return ResponseEntity.ok(ids);
     }
 
