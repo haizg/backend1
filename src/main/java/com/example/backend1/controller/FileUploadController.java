@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 @RestController
 @RequestMapping("/api/upload")
-@CrossOrigin(origins = "http://localhost:4200")
+
 public class FileUploadController {
     @Autowired
     private MinioService minioService;

@@ -32,18 +32,19 @@ public class ReviewService {
         Event event = eventRepository.findById(eventId).orElse(null);
         if (event == null) return false;
 
-        if (!isEventPast(event.getDate())) return false;
+        try {
+            LocalDate eventDate = LocalDate.parse(event.getDate());
+            if (!eventDate.isBefore(LocalDate.now())) return false;
+        } catch (Exception e) {
+            return false;
+        }
 
         User user = userRepository.findById(userId).orElse(null);
         if (user == null) return false;
 
-        List<Participant> participations = participantRepository.findByUser(user);
-        boolean participated = participations.stream()
-                .anyMatch(p -> p.getEvent().getId().equals(eventId) && p.isVerified());
-
-        if (!participated) return false;
-
-        return !reviewRepository.existsByEventAndUser(event, user);
+        return participantRepository.findByEmailAndEvent(user.getEmail(), event)
+                .map(p -> p.isVerified() && p.isAttended())
+                .orElse(false);
     }
 
     private boolean isEventPast(String dateStr) {

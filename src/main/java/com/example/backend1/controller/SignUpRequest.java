@@ -8,11 +8,9 @@ public class SignUpRequest {
     private String role;
     private String nomOrganisation;
 
-
     public String getNom() {
         return nom;
     }
-
     public void setNom(String nom) {
         this.nom = nom;
     }
@@ -20,7 +18,6 @@ public class SignUpRequest {
     public String getPrenom() {
         return prenom;
     }
-
     public void setPrenom(String prenom) {
         this.prenom = prenom;
     }
@@ -31,11 +28,10 @@ public class SignUpRequest {
     public String getNomOrganisation() {
         return nomOrganisation;
     }
+
     public void setNomOrganisation(String nomOrganisation) {
         this.nomOrganisation = nomOrganisation;
     }
-
-
     public void setEmail(String email) {
         this.email = email;
     }
@@ -43,7 +39,6 @@ public class SignUpRequest {
     public String getPassword() {
         return password;
     }
-
     public void setPassword(String password) {
         this.password = password;
     }
@@ -51,7 +46,6 @@ public class SignUpRequest {
     public String getRole() {
         return role;
     }
-
     public void setRole(String role) {
         this.role = role;
     }

@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/user")
-@CrossOrigin(origins = "http://localhost:4200")
 public class UserController {
 
     private final UserRepository userRepository;
@@ -71,7 +70,6 @@ public class UserController {
                     "nom", user.getNom(), "prenom", user.getPrenom(),
                     "email", user.getEmail(), "role", user.getRole().toString()));
         }
-
         return ResponseEntity.notFound().build();
     }
 
@@ -144,7 +142,6 @@ public class UserController {
             emailService.sendDeactivationConfirmedEmail(email, "fr");
             return ResponseEntity.ok(Map.of("status", "DEACTIVATED"));
         }
-
         return ResponseEntity.notFound().build();
     }
 

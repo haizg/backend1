@@ -28,7 +28,7 @@ public class AiController {
 
         String prompt = """
                 You are helping an event organizer in Tunisia write a professional event description.
-                Rewrite the following rough description into a clear, engaging, and professional event description
+                Rewrite the following rough description into a clear, engaging and professional event description
                 in the same language it was written in (French or English).
                 Keep it under 200 words. Return ONLY the improved description, nothing else.
                 
@@ -80,10 +80,10 @@ public class AiController {
 
     @PostMapping("/generate-poster")
     public ResponseEntity<Map<String, String>> generatePoster(@RequestBody Map<String, String> body) {
-        String title       = body.getOrDefault("title", "").trim();
+        String title= body.getOrDefault("title", "").trim();
         String description = body.getOrDefault("description", "").trim();
-        String category    = body.getOrDefault("category", "");
-        String style       = body.getOrDefault("style", "");
+        String category= body.getOrDefault("category", "");
+        String style= body.getOrDefault("style", "");
 
         if (title.isEmpty() || description.isEmpty()) {
             return ResponseEntity.badRequest()
@@ -165,9 +165,6 @@ public class AiController {
                 content = content.replaceAll("```json", "").replaceAll("```", "").trim();
             }
 
-            //List<?> recommendations = mapper.readValue(content, List.class);
-            //return ResponseEntity.ok(Map.of("recommendations", recommendations));
-
             List<?> recommendations;
 
             try {
@@ -193,7 +190,6 @@ public class AiController {
 
     @PostMapping("/analyze-event-risk")
     public ResponseEntity<Map<String, Object>> analyzeRisk(@RequestBody Map<String, String> body) {
-
         String title = body.get("title");
         String description = body.get("description");
         String location = body.get("location");

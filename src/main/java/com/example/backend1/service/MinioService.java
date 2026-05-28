@@ -68,10 +68,10 @@ public class MinioService {
                             .build()
             );
 
-            System.out.println("✅ File uploaded to MinIO: " + uniqueFilename);
+            System.out.println(" File uploaded to MinIO: " + uniqueFilename);
 
         } catch (Exception e) {
-            System.err.println("❌ Error uploading file to MinIO: " + e.getMessage());
+            System.err.println(" Error uploading file to MinIO: " + e.getMessage());
             throw new RuntimeException("Failed to upload file to MinIO", e);
         }
 
@@ -91,7 +91,7 @@ public class MinioService {
         );
 
         if (!bucketExists) {
-            System.out.println("📦 Creating bucket: " + bucketName);
+            System.out.println(" Creating bucket: " + bucketName);
 
             minioClient.makeBucket(
                     MakeBucketArgs.builder()
@@ -120,7 +120,7 @@ public class MinioService {
                             .build()
             );
 
-            System.out.println("✅ Bucket created and set to public: " + bucketName);
+            System.out.println(" Bucket created and set to public: " + bucketName);
         }
     }
 
@@ -137,10 +137,10 @@ public class MinioService {
                             .build()
             );
 
-            System.out.println("🗑️ File deleted from MinIO: " + filename);
+            System.out.println(" File deleted from MinIO: " + filename);
 
         } catch (Exception e) {
-            System.err.println("❌ Error deleting file from MinIO: " + e.getMessage());
+            System.err.println(" Error deleting file from MinIO: " + e.getMessage());
         }
     }
 }

@@ -13,12 +13,10 @@ public interface ParticipantRepository extends JpaRepository<Participant, Long> 
     List<Participant> findByEmail(String email);
     List<Participant> findByUser(User user);
     Optional<Participant> findByConfirmationToken(String token);
-
     int countByEventAndVerifiedTrue(Event event);
     boolean existsByEventIdAndUserIdAndVerifiedTrue(Long eventId, Long userId);
     List<Participant> findByEvent(Event event);
     void deleteByEvent(Event event);
     void deleteByEmail(String email);
     long countByVerified(boolean verified);
-
     Optional<Participant> findByEmailAndEvent(String email, Event event);}

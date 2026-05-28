@@ -6,6 +6,7 @@ import com.example.backend1.model.User;
 import com.example.backend1.repository.OrganisateurRepository;
 import com.example.backend1.repository.PasswordResetTokenRepository;
 import com.example.backend1.repository.UserRepository;
+import com.example.backend1.controller.ResetPasswordRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,9 +19,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:4200")
 public class PasswordResetController {
-
     private final UserRepository userRepository;
     private final OrganisateurRepository organisateurRepository;
     private final PasswordResetTokenRepository tokenRepository;
@@ -46,8 +45,6 @@ public class PasswordResetController {
         if (email == null || email.trim().isEmpty())
             return ResponseEntity.badRequest().body(Map.of("error", "Email est requis"));
 
-        // With JOINED inheritance, organisateurRepository covers organisateurs,
-        // userRepository.findByEmail covers plain users (dtype = USER)
         boolean emailExists = organisateurRepository.findByEmail(email).isPresent()
                 || userRepository.findByEmail(email).isPresent();
 
@@ -108,10 +105,6 @@ public class PasswordResetController {
         String email = found.getEmail();
         String hashed = passwordEncoder.encode(request.getNewPassword());
 
-        // Check organisateur first — if the email belongs to an organisateur,
-        // we must NOT also update via userRepository, because with JOINED inheritance
-        // userRepository.findByEmail would find the same row in the users table
-        // and we'd be saving the parent twice unnecessarily.
         Optional<Organisateur> orgOpt = organisateurRepository.findByEmail(email);
         if (orgOpt.isPresent()) {
             orgOpt.get().setPassword(hashed);
@@ -129,17 +122,6 @@ public class PasswordResetController {
             tokenRepository.save(found);
             return ResponseEntity.ok(Map.of("message", "Mot de passe réinitialisé avec succès"));
         }
-
         return ResponseEntity.badRequest().body(Map.of("error", "Utilisateur introuvable"));
     }
-}
-
-class ResetPasswordRequest {
-    private String token;
-    private String newPassword;
-
-    public String getToken() { return token; }
-    public void setToken(String token) { this.token = token; }
-    public String getNewPassword() { return newPassword; }
-    public void setNewPassword(String newPassword) { this.newPassword = newPassword; }
 }

@@ -12,23 +12,17 @@ public class PasswordResetToken {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-
     @Column(nullable = false, unique = true)
     private String token;
-
 
     @Column(nullable = false)
     private String email;
 
-
     @Column(nullable = false)
     private LocalDateTime expiryDate;
 
-
     @Column(nullable = false)
     private boolean used = false;
-
-    // ==================== CONSTRUCTORS ====================
 
     public PasswordResetToken() {}
 
@@ -38,7 +32,6 @@ public class PasswordResetToken {
         this.expiryDate = expiryDate;
         this.used = false;
     }
-
 
     public Long getId() {
         return id;
@@ -80,13 +73,9 @@ public class PasswordResetToken {
         this.used = used;
     }
 
-
-
-
     public boolean isExpired() {
         return LocalDateTime.now().isAfter(expiryDate);
     }
-
 
     public boolean isValid() {
         return !isExpired() && !used;

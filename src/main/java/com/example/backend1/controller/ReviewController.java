@@ -30,6 +30,7 @@ public class ReviewController {
         return ResponseEntity.ok(reviewService.getEventReviews(eventId));
     }
 
+
     @GetMapping("/events/{eventId}/reviews/can-review")
     public ResponseEntity<Map<String, Object>> canReview(
             @PathVariable Long eventId,
@@ -39,6 +40,7 @@ public class ReviewController {
         boolean eligible = reviewService.canUserReview(userId, eventId);
         return ResponseEntity.ok(Map.of("canReview", eligible));
     }
+
 
     @PostMapping("/events/{eventId}/reviews")
     public ResponseEntity<?> submitReview(

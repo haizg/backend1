@@ -11,14 +11,14 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
-public class HelloController {
+public class AuthController {
 
     private final VerificationTokenRepository tokenRepository;
     private final UserRepository userRepository;
     private final UserService userService;
 
-    public HelloController(UserService userService, UserRepository userRepository,
-                           VerificationTokenRepository tokenRepository) {
+    public AuthController(UserService userService, UserRepository userRepository,
+                          VerificationTokenRepository tokenRepository) {
         this.userService = userService;
         this.userRepository = userRepository;
         this.tokenRepository = tokenRepository;
@@ -57,7 +57,6 @@ public class HelloController {
     @GetMapping("/verify-account")
     public ResponseEntity<?> verifyAccount(@RequestParam String token) {
         Optional<VerificationToken> tokenOpt = tokenRepository.findByToken(token);
-
         if (tokenOpt.isEmpty()) {
             return ResponseEntity.badRequest()
                     .body(Map.of("verified", false, "error", "Token invalide ou expiré"));
@@ -89,7 +88,6 @@ public class HelloController {
                     "message", "Compte vérifié avec succès ! Vous pouvez maintenant vous connecter."));
         }
 
-        return ResponseEntity.badRequest()
-                .body(Map.of("verified", false, "error", "Compte introuvable"));
+        return ResponseEntity.badRequest().body(Map.of("verified", false, "error", "Compte introuvable"));
     }
 }

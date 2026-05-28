@@ -37,7 +37,6 @@ public class OrganizerPublicController {
                     profile.put("email", org.getEmail());
                     profile.put("nomOrganisation", org.getNomOrganisation());
                     profile.put("adminVerified", org.isAdminVerified());
-
                     Map<String, Object> stats = reviewService.getOrganizerReviewStats(id);
                     profile.put("averageRating", stats.get("averageRating"));
                     profile.put("totalReviews", stats.get("totalReviews"));

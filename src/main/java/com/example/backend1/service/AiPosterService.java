@@ -30,7 +30,6 @@ public class AiPosterService {
         String safeStyle    = (style    != null && !style.isBlank())    ? style    : "modern elegant";
         String safeCategory = (category != null && !category.isBlank()) ? category : "event";
 
-        // 1. Prompt — purely visual, no text
         String prompt = String.format(
                 "Abstract artistic background for a %s event, theme: %s, style: %s, " +
                         "vibrant colors, cinematic lighting, high quality, " +
@@ -44,13 +43,10 @@ public class AiPosterService {
         String imageUrl = "https://image.pollinations.ai/prompt/" + encodedPrompt
                 + "?width=1024&height=1024&nologo=true";
 
-        // 2. Download image
         byte[] imageBytes = new java.net.URL(imageUrl).openStream().readAllBytes();
 
-        // 3. Overlay real text using Graphics2D
         byte[] finalBytes = overlayText(imageBytes, title, safeCategory);
 
-        // 4. Upload to MinIO
         PosterMultipartFile multipartFile = new PosterMultipartFile(finalBytes);
         return minioService.uploadFile(multipartFile);
     }

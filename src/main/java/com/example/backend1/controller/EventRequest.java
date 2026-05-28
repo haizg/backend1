@@ -13,12 +13,11 @@ public class EventRequest {
     private String riskReason;
     private String predictedParticipation;
     private String predictedParticipationReason;
-
     private Integer maxParticipants;
+
     public String getTitle() {
         return title;
     }
-
     public void setTitle(String title) {
         this.title = title;
     }
@@ -26,7 +25,6 @@ public class EventRequest {
     public String getDescription() {
         return description;
     }
-
     public void setDescription(String description) {
         this.description = description;
     }
@@ -34,17 +32,16 @@ public class EventRequest {
     public String getCategory() {
         return category;
     }
-
     public void setCategory(String category) {
         this.category = category;
     }
+
     public String getProgram() { return program; }
     public void setProgram(String program) { this.program = program; }
 
     public String getDate() {
         return date;
     }
-
     public void setDate(String date) {
         this.date = date;
     }
@@ -52,7 +49,6 @@ public class EventRequest {
     public String getTime() {
         return time;
     }
-
     public void setTime(String time) {
         this.time = time;
     }
@@ -60,7 +56,6 @@ public class EventRequest {
     public String getLocation() {
         return location;
     }
-
     public void setLocation(String location) {
         this.location = location;
     }
@@ -68,7 +63,6 @@ public class EventRequest {
     public String getImageUrl() {
         return imageUrl;
     }
-
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
     }
@@ -76,7 +70,6 @@ public class EventRequest {
     public Integer getMaxParticipants() {
         return maxParticipants;
     }
-
     public void setMaxParticipants(Integer maxParticipants) {
         this.maxParticipants = maxParticipants;
     }
@@ -89,6 +82,7 @@ public class EventRequest {
 
     public String getPredictedParticipation() { return predictedParticipation; }
     public void setPredictedParticipation(String p) { this.predictedParticipation = p; }
+
     public String getPredictedParticipationReason() { return predictedParticipationReason; }
     public void setPredictedParticipationReason(String r) { this.predictedParticipationReason = r; }
 }

@@ -13,8 +13,8 @@ public class EmailService {
     private JavaMailSender mailSender;
 
     private static final String PRIMARY   = "#A53A6B";
-    private static final String SECONDARY = "#A53A6B";
-    private static final String TEAL      = "#2a6262";
+    //private static final String SECONDARY = "#A53A6B";
+    //private static final String TEAL      = "#2a6262";
 
 
     private String header() {
@@ -319,7 +319,6 @@ public class EmailService {
                 "</div>" + footer();
     }
 
-
     public void sendDeactivationRequestEmail(String toAdminEmail, String orgName,
                                              String orgEmail, String lang) {
         boolean fr = isFr(lang);
@@ -403,7 +402,6 @@ public class EmailService {
         send(toEmail, subject, body);
     }
 
-
     private void send(String toEmail, String subject, String htmlBody) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
@@ -412,7 +410,6 @@ public class EmailService {
             helper.setSubject(subject);
             helper.setText(htmlBody, true);
             mailSender.send(message);
-            System.out.println("Email sent to: " + toEmail + " | Subject: " + subject);
         } catch (Exception e) {
             System.err.println("Failed to send email to " + toEmail + ": " + e.getMessage());
             throw new RuntimeException("Failed to send email", e);
@@ -428,8 +425,6 @@ public class EmailService {
             helper.setTo(to);
             helper.setSubject(" Votre billet — " + eventTitle);
 
-            // QR code image URL — points to your scan endpoint
-            // The QR encodes the token so the organizer's scanner reads it
             String qrImageUrl = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + token;
 
             String html = """
