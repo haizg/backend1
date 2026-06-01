@@ -412,7 +412,7 @@ public class EmailService {
             mailSender.send(message);
         } catch (Exception e) {
             System.err.println("Failed to send email to " + toEmail + ": " + e.getMessage());
-            throw new RuntimeException("Failed to send email", e);
+            //throw new RuntimeException("Failed to send email", e);
         }
     }
 

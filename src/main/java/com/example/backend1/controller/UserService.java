@@ -97,7 +97,8 @@ public class UserService implements UserDetailsService {
                     LocalDateTime.now().plusHours(24)));
             emailService.sendVerificationEmail(email, token, userType);
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println("Email sending failed but user was created: " + e.getMessage());
+            //e.printStackTrace();
         }
 
         return ResponseEntity.ok(Map.of(
