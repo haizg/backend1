@@ -41,6 +41,8 @@ public class ReviewService {
 
         User user = userRepository.findById(userId).orElse(null);
         if (user == null) return false;
+        boolean alreadyReviewed = reviewRepository.existsByUserIdAndEventId(userId, eventId);
+        if (alreadyReviewed) return false;
 
         return participantRepository.findByEmailAndEvent(user.getEmail(), event)
                 .map(p -> p.isVerified() && p.isAttended())
